@@ -15,7 +15,7 @@ if [ ! -e "$HOME/.installed" ]; then
     -0 -w "/root" \
     -b /dev -b /sys -b /proc \
     --kill-on-exit \
-    /bin/bash "/install.sh" || exit 1
+    /bin/bash "$HOME/install.sh" || exit 1
 fi
 
 # Run the startup helper script
