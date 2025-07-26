@@ -10,7 +10,7 @@ export INTERNAL_IP=$(ip route get 1 | awk '{print $NF;exit}')
 
 # Check if already installed
 if [ ! -e "$HOME/.installed" ]; then
-    /usr/local/bin/proot \
+    $HOME/usr/local/bin/proot \
     --rootfs="/" \
     -0 -w "/root" \
     -b /dev -b /sys -b /proc \
