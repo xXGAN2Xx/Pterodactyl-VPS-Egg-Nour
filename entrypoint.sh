@@ -11,11 +11,11 @@ mkdir -p $HOME/root
 # Check if already installed
 if [ ! -e "$HOME/.installed" ]; then
     $HOME/usr/local/bin/proot \
-    --rootfs="$HOME" \
-    -0 -w "/root" \
+    --rootfs="$HOME/" \
+    -0 -w "$HOME/root" \
     -b /dev -b /sys -b /proc \
     --kill-on-exit \
-    /bin/bash "$HOME/install.sh" || exit 1
+    /bin/bash "/install.sh" || exit 1
 fi
 
 # Run the startup helper script
