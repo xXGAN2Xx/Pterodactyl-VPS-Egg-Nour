@@ -7,12 +7,12 @@ MODIFIED_STARTUP=$(eval echo $(echo ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g
 
 # Make internal Docker IP address available to processes.
 export INTERNAL_IP=$(ip route get 1 | awk '{print $NF;exit}')
-
+mkdir -p $HOME/root
 # Check if already installed
 if [ ! -e "$HOME/.installed" ]; then
     $HOME/usr/local/bin/proot \
-    --rootfs="/" \
-    -0 -w "$HOME/root" \
+    --rootfs="$HOME" \
+    -0 -w "/root" \
     -b /dev -b /sys -b /proc \
     --kill-on-exit \
     /bin/bash "$HOME/install.sh" || exit 1
