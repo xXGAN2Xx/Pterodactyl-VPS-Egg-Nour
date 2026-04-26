@@ -7,8 +7,8 @@ ensure_run_script_exists() {
     fi
     
     # Check if run.sh exists in the container, if not copy it again
-    if [ ! -f "/run.sh" ]; then
-        chmod +x "/run.sh"
+    if [ ! -f "${HOME}/run.sh" ]; then
+        chmod +x "${HOME}/run.sh"
     fi
 }
 
