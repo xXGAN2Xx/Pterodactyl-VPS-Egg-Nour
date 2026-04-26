@@ -715,13 +715,13 @@ execute_command() {
             print_prompt "$user"
             return 0
         ;;
+            "stop"*|"restart"*)
+            cleanup
+        ;;
         *)
             eval "$cmd"
             print_prompt "$user"
             return 0
-        ;;
-            "stop"*|"restart"*)
-            cleanup
         ;;
     esac
 }
