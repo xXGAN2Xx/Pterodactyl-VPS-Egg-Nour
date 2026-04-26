@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Source common functions and variables
-. /common.sh
+./common.sh
 
 # Configuration
 HOSTNAME="MyVPS"
