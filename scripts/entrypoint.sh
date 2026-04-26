@@ -19,4 +19,4 @@ if [ ! -e "$HOME/.installed" ]; then
 fi
 
 # Run the startup helper script
-sh /helper.sh
+sh $HOME/helper.sh
