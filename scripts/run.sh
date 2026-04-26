@@ -30,9 +30,9 @@ if [ ! -e "/.installed" ]; then
 fi
 
 # Check if the autorun script exists
-if [ ! -e "/autorun.sh" ]; then
-    touch /autorun.sh
-    chmod +x /autorun.sh
+if [ ! -e "${HOME}/autorun.sh" ]; then
+    touch ${HOME}/autorun.sh
+    chmod +x ${HOME}/autorun.sh
 fi
 
 printf "\033c"
@@ -750,8 +750,8 @@ print_instructions
 # Print initial command
 printf "${GREEN}root@${HOSTNAME}${NC}:${RED}$(get_formatted_dir)${NC}#\n"
 
-# Execute autorun.sh
-sh "/autorun.sh"
+# Execute ${HOME}autorun.sh
+sh "${HOME}/autorun.sh"
 
 # Main command loop
 while true; do
