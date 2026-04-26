@@ -2,19 +2,21 @@
 
 ensure_run_script_exists() {
     # Check if common.sh exists in the container, if not copy it again
-    if [ ! -f "${HOME}/common.sh" ]; then
-        chmod +x "${HOME}/common.sh"
+    if [ ! -f "$HOME/common.sh" ]; then
+        cp /common.sh "$HOME/common.sh"
+        chmod +x "$HOME/common.sh"
     fi
     
     # Check if run.sh exists in the container, if not copy it again
-    if [ ! -f "${HOME}/run.sh" ]; then
-        chmod +x "${HOME}/run.sh"
+    if [ ! -f "$HOME/run.sh" ]; then
+        cp /run.sh "$HOME/run.sh"
+        chmod +x "$HOME/run.sh"
     fi
 }
 
 # Parse port configuration
 parse_ports() {
-    config_file="${HOME}/vps.config"
+    config_file="$HOME/vps.config"
     port_args=""
     
     # Check if config file exists
@@ -62,9 +64,9 @@ parse_ports() {
 exec_proot() {
     port_args=$(parse_ports)
     
-    ${HOME}/usr/local/bin/proot \
-    --rootfs="${HOME}/" \
-    -0 -w "/root" \
+    /usr/local/bin/proot \
+    --rootfs="${HOME}" \
+    -0 -w "${HOME}" \
     -b /dev -b /sys -b /proc \
     $port_args \
     --kill-on-exit \
