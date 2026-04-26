@@ -9,7 +9,7 @@ MODIFIED_STARTUP=$(eval echo $(echo ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g
 export INTERNAL_IP=$(ip route get 1 | awk '{print $NF;exit}')
 
 # Check if already installed
-if [ ! -e ${HOME}/.installed" ]; then
+if [ ! -e "${HOME}/.installed" ]; then
     ${HOME}/usr/local/bin/proot \
     --rootfs="/" \
     -0 -w "/root" \
