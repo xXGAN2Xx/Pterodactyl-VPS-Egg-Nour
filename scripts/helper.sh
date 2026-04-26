@@ -68,7 +68,7 @@ exec_proot() {
     -b /dev -b /sys -b /proc \
     $port_args \
     --kill-on-exit \
-    /bin/sh "/run.sh"
+    /bin/sh "${HOME}/run.sh"
 }
 
 ensure_run_script_exists
