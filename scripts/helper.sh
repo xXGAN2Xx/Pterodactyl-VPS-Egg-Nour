@@ -62,9 +62,9 @@ parse_ports() {
 exec_proot() {
     port_args=$(parse_ports)
     
-    ${HOME}/usr/local/bin/proot \
-    --rootfs="${HOME}" \
-    -0 -w "${HOME}" \
+    /usr/local/bin/proot \
+    --rootfs="/" \
+    -0 -w "/root" \
     -b /dev -b /sys -b /proc \
     $port_args \
     --kill-on-exit \
