@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Source common functions and variables
-. $HOME/common.sh
+. ${HOME}/common.sh
 
 # Configuration variables
 ROOTFS_DIR="/home/container"
