@@ -50,8 +50,8 @@ cleanup() {
 get_formatted_dir() {
     current_dir="$PWD"
     case "$current_dir" in
-        "$HOME"*)
-            printf "~${current_dir#$HOME}"
+        "${HOME}"*)
+            printf "~${current_dir#${HOME}}"
         ;;
         *)
             printf "$current_dir"
@@ -125,7 +125,7 @@ install_wget() {
 }
 
 GUI_CONFIG_FILE="/gui_config.yml"
-VNC_DIR="$HOME/.vnc"
+VNC_DIR="${HOME}/.vnc"
 
 install_gui() {
     if [ -f "/gui_config.yml" ]; then
@@ -144,7 +144,7 @@ install_gui() {
 reinstall_gui() {
     rm -f "$GUI_CONFIG_FILE"
     rm -rf "$VNC_DIR"
-    rm -f "$HOME/.xsession"
+    rm -f "${HOME}/.xsession"
     install_gui
 }
 
@@ -197,7 +197,7 @@ start_vnc() {
         VNC_DISPLAY_NUM=1
     fi
     
-    mkdir -p "$HOME/.vnc" 2>/dev/null
+    mkdir -p "${HOME}/.vnc" 2>/dev/null
     mkdir -p /tmp/.X11-unix 2>/dev/null || true
     
     pkill -f "Xtigervnc.*:$VNC_DISPLAY_NUM" > /dev/null 2>&1 || true
@@ -206,7 +206,7 @@ start_vnc() {
     
     start_desktop_env() {
         export DISPLAY=":$VNC_DISPLAY_NUM"
-        export HOME="$HOME"
+        export HOME="${HOME}"
         export XDG_RUNTIME_DIR="/tmp/runtime-$(id -u)"
         mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
         chmod 700 "$XDG_RUNTIME_DIR" 2>/dev/null || true
@@ -251,10 +251,10 @@ start_vnc() {
     
     VNC_SECURITY="-SecurityTypes None"
     if [ -n "$VNC_PASSWORD" ] && [ "$VNC_PASSWORD" != "" ]; then
-        mkdir -p "$HOME/.vnc" 2>/dev/null
-        printf "%s\n%s\nn\n" "$VNC_PASSWORD" "$VNC_PASSWORD" | vncpasswd "$HOME/.vnc/passwd" > /dev/null 2>&1
-        if [ -f "$HOME/.vnc/passwd" ]; then
-            VNC_SECURITY="-SecurityTypes VncAuth -PasswordFile $HOME/.vnc/passwd"
+        mkdir -p "${HOME}/.vnc" 2>/dev/null
+        printf "%s\n%s\nn\n" "$VNC_PASSWORD" "$VNC_PASSWORD" | vncpasswd "${HOME}/.vnc/passwd" > /dev/null 2>&1
+        if [ -f "${HOME}/.vnc/passwd" ]; then
+            VNC_SECURITY="-SecurityTypes VncAuth -PasswordFile ${HOME}/.vnc/passwd"
         fi
     fi
     
