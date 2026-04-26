@@ -62,7 +62,7 @@ parse_ports() {
 exec_proot() {
     port_args=$(parse_ports)
     
-    /usr/local/bin/proot \
+    ${HOME}/usr/local/bin/proot \
     --rootfs="${HOME}" \
     -0 -w "${HOME}" \
     -b /dev -b /sys -b /proc \
