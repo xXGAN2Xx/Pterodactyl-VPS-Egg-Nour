@@ -7,8 +7,8 @@ ensure_run_script_exists() {
     fi
     
     # Check if run.sh exists in the container, if not copy it again
-    if [ ! -f "${HOME}/run.sh" ]; then
-        chmod +x "${HOME}/run.sh"
+    if [ ! -f "/run.sh" ]; then
+        chmod +x "/run.sh"
     fi
 }
 
@@ -68,7 +68,7 @@ exec_proot() {
     -b /dev -b /sys -b /proc \
     $port_args \
     --kill-on-exit \
-    /bin/sh "${HOME}/run.sh"
+    /bin/sh "/run.sh"
 }
 
 ensure_run_script_exists
