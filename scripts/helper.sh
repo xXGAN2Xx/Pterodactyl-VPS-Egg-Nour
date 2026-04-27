@@ -1,17 +1,5 @@
 #!/bin/sh
 
-ensure_run_script_exists() {
-    # Check if common.sh exists in the container, if not copy it again
-    if [ ! -f "$HOME/common.sh" ]; then
-        chmod +x "$HOME/common.sh"
-    fi
-    
-    # Check if run.sh exists in the container, if not copy it again
-    if [ ! -f "$HOME/run.sh" ]; then
-        chmod +x "$HOME/run.sh"
-    fi
-}
-
 # Parse port configuration
 parse_ports() {
     config_file="$HOME/vps.config"
@@ -70,7 +58,5 @@ exec_proot() {
     --kill-on-exit \
     /bin/sh "/run.sh"
 }
-
-ensure_run_script_exists
 
 exec_proot
