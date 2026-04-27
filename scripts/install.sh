@@ -10,7 +10,6 @@ DISTRO_MAP_URL="https://distromap.ysdragon.tech"
 
 # Add to PATH
 export PATH="$PATH:~/.local/usr/bin"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:~/.local/usr/lib:~/.local/usr/lib64"
 
 # Define all available distributions
 # Format: "number:display_name:distro_id:flag:post_config:custom_handler"
