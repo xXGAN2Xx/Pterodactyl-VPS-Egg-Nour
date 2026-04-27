@@ -331,12 +331,5 @@ else
     fi
 fi
 
-# Copy run.sh, common.sh, and vnc_install.sh to ROOTFS_DIR and make them executable
-chmod +x "$ROOTFS_DIR/common.sh" "$ROOTFS_DIR/run.sh"
-
-if [ -f "/vnc_install.sh" ]; then
-    chmod +x "$ROOTFS_DIR/vnc_install.sh"
-fi
-
 # Trap for cleanup on script exit
 trap cleanup EXIT
