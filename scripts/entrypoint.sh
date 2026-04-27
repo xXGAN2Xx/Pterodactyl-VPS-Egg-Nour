@@ -19,4 +19,9 @@ if [ ! -e "$HOME/.installed" ]; then
 fi
 
 # Run the startup helper script
-sh $HOME/helper.sh
+    $HOME/usr/local/bin/proot \
+    --rootfs="${HOME}" \
+    -0 -w "/root" \
+    -b /dev -b /sys -b /proc \
+    --kill-on-exit \
+    /bin/sh "/run.sh"
