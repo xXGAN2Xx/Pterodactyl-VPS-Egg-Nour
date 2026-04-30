@@ -127,4 +127,4 @@ echo "  ╠═══════════════════════
 echo "  ║  ▶  To start Sing-box:                   ║"
 echo "bash $SINGBOX_SCRIPT"
 echo "  ╚══════════════════════════════════════════╝"
-printf "\e
+printf "\e"
