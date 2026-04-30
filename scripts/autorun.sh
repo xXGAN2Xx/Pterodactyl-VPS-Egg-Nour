@@ -11,7 +11,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 
 # ── [1] Dependencies ─────────────────────
 
-if[ ! -f "$DEP_LOCK_FILE" ]; then
+if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
@@ -44,12 +44,12 @@ echo "Checking/Installing Sing-box..."
 curl -fsSL https://sing-box.app/install.sh | sh
 
 # --- Port ---
-if[ -z "\${SERVER_PORT:-}" ]; then
+if [ -z "\${SERVER_PORT:-}" ]; then
     echo ""
     echo "⚠️  SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
-    while[ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
-          || [ "\$SERVER_PORT" -lt 1 ] ||[ "\$SERVER_PORT" -gt 65535 ]; do
+    while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
+          || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
     done
