@@ -9,14 +9,14 @@ SINGBOX_SCRIPT="${SCRIPT_DIR}/sing-box.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
-if[ "$(id -u)" -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
     echo "[!] Run as root." >&2
     exit 1
 fi
 
 # ── [1] Dependencies ─────────────────────
 
-if[ ! -f "$DEP_LOCK_FILE" ]; then
+if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
