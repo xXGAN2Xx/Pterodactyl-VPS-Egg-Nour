@@ -1,14 +1,11 @@
 #!/bin/bash
 
 # ==========================================
-#        MASTER SETUP SCRIPT
+#        MASTER SETUP SCRIPT (SING-BOX)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SINGBOX_SCRIPT="${SCRIPT_DIR}/sing-box.sh"
-
-# Detect Public IP
-SERVER_IP=$(curl -s https://api.ipify.org || echo "YOUR_IP")
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
@@ -23,7 +20,7 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal tmate sudo ca-certificates
+        curl wget sed python3-minimal sudo ca-certificates
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -36,23 +33,25 @@ fi
 
 generate_singbox() {
     local TARGET="$1"
+    # Using evaluated heredoc to bake the existing SERVER_IP into the script
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "--- [Sing-box VLESS+HTTP (Empty Host) Startup Script] ---"
+echo "--- [Sing-box VLESS + HTTP Masquerade Startup Script] ---"
 
+# --- New Config Location ---
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
 
 mkdir -p "\$CONFIG_DIR"
 
 # --- Sing-box Core Installation ---
-echo "Checking/Installing Sing-box..."
 if ! command -v sing-box &> /dev/null; then
+    echo "Installing Sing-box..."
     bash -c "\$(curl -fsSL https://sing-box.app/install.sh)" install
 fi
 
-# --- Port ---
+# --- Port Selection ---
 if [ -z "\${SERVER_PORT:-}" ]; then
     echo ""
     echo "⚠️  SERVER_PORT is not set!"
@@ -66,7 +65,9 @@ if [ -z "\${SERVER_PORT:-}" ]; then
 fi
 
 UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+HOST="playstation.net"
 
+# --- Generate Sing-box Config (VLESS + HTTP Transport) ---
 cat > "\$CONFIG_PATH" << JSON
 {
   "log": {
@@ -87,8 +88,9 @@ cat > "\$CONFIG_PATH" << JSON
       ],
       "transport": {
         "type": "http",
-        "host": [],
-        "path": "/"
+        "host": ["\${HOST}"],
+        "path": "/",
+        "method": "GET"
       }
     }
   ],
@@ -103,8 +105,8 @@ JSON
 
 echo ""
 echo "=========================================================="
-echo "  VLESS+HTTP (Empty Host) Link:"
-echo "  vless://\${UUID}@${SERVER_IP}:\${SERVER_PORT}?encryption=none&security=none&type=http&host=&path=/#Nour"
+echo "  VLESS + HTTP Masquerade Link:"
+echo "  vless://\${UUID}@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=http&host=\${HOST}&path=/#Nour"
 echo "=========================================================="
 echo ""
 
@@ -132,8 +134,9 @@ echo "  ╔═══════════════════════
 echo "  ║         ✅  SETUP COMPLETE               ║"
 echo "  ╠══════════════════════════════════════════╣"
 echo "  ║                                          ║"
-echo "  ║  🌍  Using IP         →  $SERVER_IP"
-echo "  ║  ⚙️  Sing-box Config  →  Ready (HTTP/Empty)║"
+echo "  ║  🌍  Using IP         →  ${server_ip:-UNKNOWN_IP}"
+echo "  ║  ⚙️  Config Location  →  /etc/sing-box/   ║"
+echo "  ║  🎮  Masquerade      →  playstation.net  ║"
 echo "  ║                                          ║"
 echo "  ╠══════════════════════════════════════════╣"
 echo "  ║  ▶  To start Sing-box:                   ║"
