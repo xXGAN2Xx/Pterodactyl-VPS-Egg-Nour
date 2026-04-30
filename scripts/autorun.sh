@@ -59,7 +59,7 @@ fi
 cat > "\$CONFIG_PATH" << JSON
 {
   "log": {
-    "level": "info",
+    "level": "error",
     "timestamp": true
   },
   "inbounds":[
