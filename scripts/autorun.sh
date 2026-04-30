@@ -46,7 +46,7 @@ mkdir -p "\$CONFIG_DIR"
 
 # --- Sing-box Core Installation ---
 echo "Checking/Installing Sing-box..."
-bash -c "\$(curl -fsSL https://sing-box.app/install.sh)" install
+curl -fsSL https://sing-box.app/install.sh | sh
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
