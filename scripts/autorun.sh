@@ -7,6 +7,9 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SINGBOX_SCRIPT="${SCRIPT_DIR}/sing-box.sh"
 
+# Detect Public IP
+SERVER_IP=$(curl -s https://api.ipify.org || echo "YOUR_IP")
+
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -33,11 +36,10 @@ fi
 
 generate_singbox() {
     local TARGET="$1"
-    # Using evaluated heredoc to bake the existing SERVER_IP into the script
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "--- [Sing-box VLESS+TCP Plain Startup Script] ---"
+echo "--- [Sing-box VLESS+HTTP (Empty Host) Startup Script] ---"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
@@ -46,7 +48,9 @@ mkdir -p "\$CONFIG_DIR"
 
 # --- Sing-box Core Installation ---
 echo "Checking/Installing Sing-box..."
-curl -fsSL https://sing-box.app/install.sh | sh
+if ! command -v sing-box &> /dev/null; then
+    bash -c "\$(curl -fsSL https://sing-box.app/install.sh)" install
+fi
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
@@ -54,7 +58,7 @@ if [ -z "\${SERVER_PORT:-}" ]; then
     echo "⚠️  SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
     while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \
-          ||[ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
+          || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
     done
@@ -66,24 +70,29 @@ UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
 cat > "\$CONFIG_PATH" << JSON
 {
   "log": {
-    "level": "error",
+    "level": "info",
     "timestamp": true
   },
-  "inbounds":[
+  "inbounds": [
     {
       "type": "vless",
       "tag": "vless-in",
       "listen": "::",
       "listen_port": \${SERVER_PORT},
-      "users":[
+      "users": [
         {
           "name": "user",
           "uuid": "\${UUID}"
         }
-      ]
+      ],
+      "transport": {
+        "type": "http",
+        "host": [],
+        "path": "/"
+      }
     }
   ],
-  "outbounds":[
+  "outbounds": [
     {
       "type": "direct",
       "tag": "direct"
@@ -94,8 +103,8 @@ JSON
 
 echo ""
 echo "=========================================================="
-echo "  VLESS+TCP Plain Link:"
-echo "  vless://\${UUID}@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp#Nour"
+echo "  VLESS+HTTP (Empty Host) Link:"
+echo "  vless://\${UUID}@${SERVER_IP}:\${SERVER_PORT}?encryption=none&security=none&type=http&host=&path=/#Nour"
 echo "=========================================================="
 echo ""
 
@@ -123,11 +132,11 @@ echo "  ╔═══════════════════════
 echo "  ║         ✅  SETUP COMPLETE               ║"
 echo "  ╠══════════════════════════════════════════╣"
 echo "  ║                                          ║"
-echo "  ║  🌍  Using IP         →  ${server_ip:-UNKNOWN_IP} "
-echo "  ║  ⚙️  Sing-box Config  →  Ready            ║"
+echo "  ║  🌍  Using IP         →  $SERVER_IP"
+echo "  ║  ⚙️  Sing-box Config  →  Ready (HTTP/Empty)║"
 echo "  ║                                          ║"
 echo "  ╠══════════════════════════════════════════╣"
 echo "  ║  ▶  To start Sing-box:                   ║"
-echo "bash $SINGBOX_SCRIPT"
+echo "  ║  bash $SINGBOX_SCRIPT                    ║"
 echo "  ╚══════════════════════════════════════════╝"
 printf "\e[0m\n"
