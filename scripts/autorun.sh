@@ -9,11 +9,6 @@ SINGBOX_SCRIPT="${SCRIPT_DIR}/sing-box.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
-if [ "$(id -u)" -ne 0 ]; then
-    echo "[!] Run as root." >&2
-    exit 1
-fi
-
 # ── [1] Dependencies ─────────────────────
 
 if[ ! -f "$DEP_LOCK_FILE" ]; then
@@ -46,7 +41,7 @@ mkdir -p "\$CONFIG_DIR"
 
 # --- Sing-box Core Installation ---
 echo "Checking/Installing Sing-box..."
-bash -c "\$(curl -fsSL https://sing-box.app/install.sh)" install
+curl -fsSL https://sing-box.app/install.sh | sh
 
 # --- Port ---
 if[ -z "\${SERVER_PORT:-}" ]; then
@@ -60,8 +55,6 @@ if[ -z "\${SERVER_PORT:-}" ]; then
     done
     echo "✅ Using port: \$SERVER_PORT"
 fi
-
-UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
 
 cat > "\$CONFIG_PATH" << JSON
 {
@@ -78,14 +71,12 @@ cat > "\$CONFIG_PATH" << JSON
       "users":[
         {
           "name": "user",
-          "uuid": "\${UUID}"
+          "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
         }
       ],
       "transport": {
         "type": "http",
-        "host":[
-          "playstation.net"
-        ],
+        "host":[""],
         "path": "/"
       }
     }
@@ -102,7 +93,7 @@ JSON
 echo ""
 echo "=========================================================="
 echo "  VLESS+TCP (Plain HTTP Obfuscation) Link:"
-echo "  vless://\${UUID}@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
+echo "  vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
 echo "=========================================================="
 echo ""
 
