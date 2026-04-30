@@ -1,31 +1,3 @@
-#!/bin/bash
-
-# ==========================================
-#        MASTER SETUP SCRIPT
-# ==========================================
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SINGBOX_SCRIPT="${SCRIPT_DIR}/sing-box.sh"
-
-DEP_LOCK_FILE="/etc/os_deps_installed"
-
-# ── [1] Dependencies ─────────────────────
-
-if [ ! -f "$DEP_LOCK_FILE" ]; then
-    echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
-    apt-get update -y
-    apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal tmate sudo ca-certificates
-    touch "$DEP_LOCK_FILE"
-    echo "Dependencies installed."
-else
-    echo "--- [1] System Setup: Dependencies already installed. Skipping. ---"
-fi
-
-# ==========================================
-#   GENERATOR: sing-box.sh
-# ==========================================
-
 generate_singbox() {
     local TARGET="$1"
     # Using evaluated heredoc to bake the existing SERVER_IP into the script
@@ -49,7 +21,7 @@ if [ -z "\${SERVER_PORT:-}" ]; then
     echo "⚠️  SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
     while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
-          || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
+          ||[ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
     done
@@ -76,8 +48,7 @@ cat > "\$CONFIG_PATH" << JSON
       ],
       "transport": {
         "type": "http",
-        "host":[""],
-        "path": "/"
+        "path": "/nour"
       }
     }
   ],
@@ -93,7 +64,7 @@ JSON
 echo ""
 echo "=========================================================="
 echo "  VLESS+TCP (Plain HTTP Obfuscation) Link:"
-echo "  vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net&path=/nour#Nour"
 echo "=========================================================="
 echo ""
 
@@ -101,31 +72,3 @@ echo "Starting Sing-box..."
 sing-box run -c "\$CONFIG_PATH"
 EOF
 }
-
-# ==========================================
-#   [2] Generate proxy scripts
-# ==========================================
-
-echo "--- [2] Generating proxy scripts ---"
-
-generate_singbox "$SINGBOX_SCRIPT"
-chmod +x "$SINGBOX_SCRIPT"
-
-# ==========================================
-#        DONE
-# ==========================================
-
-echo ""
-printf "\e[1;36m"
-echo "  ╔══════════════════════════════════════════╗"
-echo "  ║         ✅  SETUP COMPLETE               ║"
-echo "  ╠══════════════════════════════════════════╣"
-echo "  ║                                          ║"
-echo "  ║  🌍  Using IP         →  ${server_ip:-UNKNOWN_IP} "
-echo "  ║  ⚙️  Sing-box Config  →  Ready            ║"
-echo "  ║                                          ║"
-echo "  ╠══════════════════════════════════════════╣"
-echo "  ║  ▶  To start Sing-box:                   ║"
-echo "bash $SINGBOX_SCRIPT"
-echo "  ╚══════════════════════════════════════════╝"
-printf "\e[0m\n"
