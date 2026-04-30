@@ -89,12 +89,10 @@ cat > "\$CONFIG_PATH" << JSON
 }
 JSON
 
-echo ""
 echo "=========================================================="
 echo "  VLESS+TCP (Plain HTTP Obfuscation) Link:"
 echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&type=http&host=playstation.net&path=/nour&method=GET&packetEncoding=xudp#Nour"
 echo "=========================================================="
-echo ""
 
 echo "Starting Sing-box..."
 sing-box run -c "\$CONFIG_PATH"
