@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-#        MASTER SETUP SCRIPT (SING-BOX)
+#        MASTER SETUP SCRIPT
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -16,11 +16,11 @@ fi
 
 # ── [1] Dependencies ─────────────────────
 
-if [ ! -f "$DEP_LOCK_FILE" ]; then
+if[ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal sudo ca-certificates
+        curl wget sed python3-minimal tmate sudo ca-certificates
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -37,27 +37,24 @@ generate_singbox() {
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "--- [Sing-box VLESS + HTTP Masquerade Startup Script] ---"
+echo "---[Sing-box VLESS+TCP (Plain HTTP Obfuscation) Startup Script] ---"
 
-# --- New Config Location ---
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
 
 mkdir -p "\$CONFIG_DIR"
 
 # --- Sing-box Core Installation ---
-if ! command -v sing-box &> /dev/null; then
-    echo "Installing Sing-box..."
-    bash -c "\$(curl -fsSL https://sing-box.app/install.sh)" install
-fi
+echo "Checking/Installing Sing-box..."
+bash -c "\$(curl -fsSL https://sing-box.app/install.sh)" install
 
-# --- Port Selection ---
-if [ -z "\${SERVER_PORT:-}" ]; then
+# --- Port ---
+if[ -z "\${SERVER_PORT:-}" ]; then
     echo ""
     echo "⚠️  SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
-    while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \
-          || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
+    while[ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
+          || [ "\$SERVER_PORT" -lt 1 ] ||[ "\$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
     done
@@ -65,22 +62,20 @@ if [ -z "\${SERVER_PORT:-}" ]; then
 fi
 
 UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
-HOST="playstation.net"
 
-# --- Generate Sing-box Config (VLESS + HTTP Transport) ---
 cat > "\$CONFIG_PATH" << JSON
 {
   "log": {
     "level": "info",
     "timestamp": true
   },
-  "inbounds": [
+  "inbounds":[
     {
       "type": "vless",
       "tag": "vless-in",
       "listen": "::",
       "listen_port": \${SERVER_PORT},
-      "users": [
+      "users":[
         {
           "name": "user",
           "uuid": "\${UUID}"
@@ -88,13 +83,14 @@ cat > "\$CONFIG_PATH" << JSON
       ],
       "transport": {
         "type": "http",
-        "host": ["\${HOST}"],
-        "path": "/",
-        "method": "GET"
+        "host":[
+          "playstation.net"
+        ],
+        "path": "/"
       }
     }
   ],
-  "outbounds": [
+  "outbounds":[
     {
       "type": "direct",
       "tag": "direct"
@@ -105,8 +101,8 @@ JSON
 
 echo ""
 echo "=========================================================="
-echo "  VLESS + HTTP Masquerade Link:"
-echo "  vless://\${UUID}@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=http&host=\${HOST}&path=/#Nour"
+echo "  VLESS+TCP (Plain HTTP Obfuscation) Link:"
+echo "  vless://\${UUID}@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
 echo "=========================================================="
 echo ""
 
@@ -134,12 +130,11 @@ echo "  ╔═══════════════════════
 echo "  ║         ✅  SETUP COMPLETE               ║"
 echo "  ╠══════════════════════════════════════════╣"
 echo "  ║                                          ║"
-echo "  ║  🌍  Using IP         →  ${server_ip:-UNKNOWN_IP}"
-echo "  ║  ⚙️  Config Location  →  /etc/sing-box/   ║"
-echo "  ║  🎮  Masquerade      →  playstation.net  ║"
+echo "  ║  🌍  Using IP         →  ${server_ip:-UNKNOWN_IP} "
+echo "  ║  ⚙️  Sing-box Config  →  Ready            ║"
 echo "  ║                                          ║"
 echo "  ╠══════════════════════════════════════════╣"
 echo "  ║  ▶  To start Sing-box:                   ║"
-echo "  ║  bash $SINGBOX_SCRIPT                    ║"
+echo "  ║  bash $SINGBOX_SCRIPT"
 echo "  ╚══════════════════════════════════════════╝"
 printf "\e[0m\n"
