@@ -95,6 +95,7 @@ cat > "\$CONFIG_PATH" << JSON
             "ekb.eg"
           ],
           "privateKey": "\${PRIVATE_KEY}",
+          "shortIds": [""],
           "spiderX": "/"
         }
       },
