@@ -1,21 +1,21 @@
 #!/bin/bash
 
 # ==========================================
-#        MASTER SETUP SCRIPT
+# MASTER SETUP SCRIPT - GAMING UDP443
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SINGBOX_SCRIPT="${SCRIPT_DIR}/sing-box.sh"
+XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
 # ── [1] Dependencies ─────────────────────
 
-if [ ! -f "$DEP_LOCK_FILE" ]; then
+if [! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal tmate sudo ca-certificates
+        curl wget sed python3-minimal tmate sudo ca-certificates openssl
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -23,32 +23,31 @@ else
 fi
 
 # ==========================================
-#   GENERATOR: sing-box.sh
+# GENERATOR: xray.sh
 # ==========================================
 
-generate_singbox() {
+generate_xray() {
     local TARGET="$1"
-    # Using evaluated heredoc to bake the existing SERVER_IP into the script
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "---[Sing-box VLESS+TCP (Plain HTTP Obfuscation) Startup Script] ---"
+echo "---[Xray VLESS+Reality GAMING UDP443 Startup Script] ---"
 
-CONFIG_DIR="/etc/sing-box"
+CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
 
 mkdir -p "\$CONFIG_DIR"
 
-# --- Sing-box Core Installation ---
-echo "Checking/Installing Sing-box..."
-curl -fsSL https://sing-box.app/install.sh | sh
+# --- Xray Core Installation ---
+echo "Checking/Installing Xray (without geodata)..."
+bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
     echo ""
-    echo "⚠️  SERVER_PORT is not set!"
+    echo "⚠ SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
-    while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
+    while [ -z "\$SERVER_PORT" ] ||! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
           || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
@@ -56,73 +55,96 @@ if [ -z "\${SERVER_PORT:-}" ]; then
     echo "✅ Using port: \$SERVER_PORT"
 fi
 
+# --- Hardcoded Reality keys ---
+PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
+PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
+
 cat > "\$CONFIG_PATH" << JSON
 {
   "log": {
-    "level": "fatal",
-    "timestamp": true
+    "loglevel": "none"
   },
-  "inbounds":[
+  "inbounds": [
     {
-      "type": "vless",
-      "tag": "vless-in",
-      "listen": "::",
-      "listen_port": \${SERVER_PORT},
-      "users":[
-        {
-          "name": "user",
-          "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+      "port": \${SERVER_PORT},
+      "listen": "0.0.0.0",
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
+            "flow": "xtls-rprx-vision-udp443"
+          }
+        ],
+        "decryption": "none",
+        "packetEncoding": "xudp"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpKeepAliveIdle": 30
+        },
+        "realitySettings": {
+          "show": false,
+          "dest": "www.google.com:443",
+          "xver": 0,
+          "serverNames": [
+            "playstation.net",
+            "ekb.eg"
+          ],
+          "privateKey": "\${PRIVATE_KEY}",
+          "shortIds": [],
+          "spiderX": "/"
         }
-      ],
-      "transport": {
-        "type": "http",
-        "path": "/"
+      },
+      "sniffing": {
+        "enabled": false
       }
     }
   ],
-  "outbounds":[
+  "outbounds": [
     {
-      "type": "direct",
-      "tag": "direct"
+      "protocol": "freedom",
+      "tag": "direct",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      }
     }
   ]
 }
 JSON
 
 echo "=========================================================="
-echo "  VLESS+TCP (Plain HTTP Obfuscation) Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
+echo " VLESS+Reality GAMING UDP443 Link:"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision-udp443&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp#Nour-Gaming-UDP443"
 echo "=========================================================="
 
-echo "Starting Sing-box..."
-sing-box run -c "\$CONFIG_PATH"
+echo "Starting Xray..."
+xray run -c "\$CONFIG_PATH"
 EOF
 }
 
 # ==========================================
-#   [2] Generate proxy scripts
+# [2] Generate proxy scripts
 # ==========================================
 
 echo "--- [2] Generating proxy scripts ---"
 
-generate_singbox "$SINGBOX_SCRIPT"
-chmod +x "$SINGBOX_SCRIPT"
+generate_xray "$XRAY_SCRIPT"
+chmod +x "$XRAY_SCRIPT"
 
 # ==========================================
-#        DONE
+# DONE
 # ==========================================
 
 echo ""
 printf "\e[1;36m"
-echo "  ╔══════════════════════════════════════════╗"
-echo "  ║         ✅  SETUP COMPLETE               ║"
-echo "  ╠══════════════════════════════════════════╣"
-echo "  ║                                          ║"
-echo "  ║  🌍  Using IP         →  ${server_ip:-UNKNOWN_IP} "
-echo "  ║  ⚙️  Sing-box Config  →  Ready            ║"
-echo "  ║                                          ║"
-echo "  ╠══════════════════════════════════════════╣"
-echo "  ║  ▶  To start Sing-box:                   ║"
-echo "bash $SINGBOX_SCRIPT"
-echo "  ╚══════════════════════════════════════════╝"
-printf "\e"
+echo " ╔══════════════════════════════════════════╗"
+echo " ║ ✅ SETUP COMPLETE - UDP443 MODE ║"
+echo " ╠══════════════════════════════════════════╣"
+echo " ║ 🌍 Using IP → ${server_ip:-UNKNOWN_IP} "
+echo " ║ ⚙ Flow → xtls-rprx-vision-udp443 ║"
+echo " ╚══════════════════════════════════════════╝"
+printf "\e[0m"
