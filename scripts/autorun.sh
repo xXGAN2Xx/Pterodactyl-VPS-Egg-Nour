@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT - GAMING UDP443
+# MASTER SETUP SCRIPT
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -31,7 +31,7 @@ generate_xray() {
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "---[Xray VLESS+Reality GAMING UDP443 Startup Script] ---"
+echo "---[Xray VLESS+Reality Startup Script] ---"
 
 CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
@@ -112,7 +112,7 @@ cat > "\$CONFIG_PATH" << JSON
 JSON
 
 echo "=========================================================="
-echo " VLESS+Reality GAMING UDP443 Link:"
+echo " VLESS+Reality Link:"
 echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:${SERVER_PORT}?encryption=none&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=grpc&serviceName=game&mode=gun&packetEncoding=xudp#Nour-Gaming"
 echo "=========================================================="
 
