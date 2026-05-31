@@ -9,7 +9,7 @@ XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
-# ── [1] Dependencies ─────────────────────
+# ── [1] Dependencies & System Optimization ─────────────────────
 
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
@@ -21,6 +21,15 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
 else
     echo "--- [1] System Setup: Dependencies already installed. Skipping. ---"
 fi
+
+echo "--- Enabling BBR for optimal network performance ---"
+if ! grep -q "net.core.default_qdisc=fq" /etc/sysctl.conf; then
+    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+fi
+if ! grep -q "net.ipv4.tcp_congestion_control=bbr" /etc/sysctl.conf; then
+    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+fi
+sysctl -p
 
 # ==========================================
 # GENERATOR: xray.sh
@@ -47,7 +56,7 @@ if [ -z "\${SERVER_PORT:-}" ]; then
     echo ""
     echo "⚠ SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
-    while [ -z "\$SERVER_PORT" ] ||! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
+    while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
           || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
@@ -88,19 +97,16 @@ cat > "\$CONFIG_PATH" << JSON
         },
         "realitySettings": {
           "show": false,
-          "dest": "playstation.net:443",
+          "dest": "www.google.com:443",
           "xver": 0,
           "serverNames": [
-            "playstation.net",
+            "www.google.com",
             "ekb.eg"
           ],
           "privateKey": "\${PRIVATE_KEY}",
           "shortIds": [""],
           "spiderX": "/"
         }
-      },
-      "sniffing": {
-        "enabled": false
       }
     }
   ],
@@ -118,7 +124,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp#Nour"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.google.com&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp#Nour"
 echo "=========================================================="
 
 echo "Starting Xray..."
