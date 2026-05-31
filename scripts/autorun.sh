@@ -56,8 +56,6 @@ if [ -z "\${SERVER_PORT:-}" ]; then
 fi
 
 # --- Hardcoded Reality keys ---
-PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
-PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
 
 cat > "\$CONFIG_PATH" << JSON
 {
@@ -92,7 +90,7 @@ cat > "\$CONFIG_PATH" << JSON
         "realitySettings": {
           "dest": "playstation.net:443",
           "serverNames": ["playstation.net"],
-          "privateKey": "${PRIVATE_KEY}",
+          "privateKey": "oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE",
           "shortIds": [""],
           "spiderX": "/"
         }
@@ -113,7 +111,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:${SERVER_PORT}?encryption=none&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=grpc&serviceName=game&mode=gun&packetEncoding=xudp#Nour-Gaming"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:${SERVER_PORT}?encryption=none&security=reality&sni=playstation.net&fp=chrome&pbk=oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo&type=grpc&serviceName=game&mode=gun&packetEncoding=xudp#Nour-Gaming"
 echo "=========================================================="
 
 echo "Starting Xray..."
