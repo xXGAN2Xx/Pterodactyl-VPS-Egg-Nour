@@ -88,7 +88,7 @@ cat > "\$CONFIG_PATH" << JSON
         },
         "realitySettings": {
           "show": false,
-          "dest": "www.google.com:443",
+          "dest": "playstation.net:443",
           "xver": 0,
           "serverNames": [
             "playstation.net",
