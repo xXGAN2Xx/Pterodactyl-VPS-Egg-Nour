@@ -15,7 +15,7 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal tmate sudo ca-certificates openssl
+        curl wget sed python3-minimal tmate sudo ca-certificates openssl grep
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -40,7 +40,7 @@ mkdir -p "\$CONFIG_DIR"
 
 # --- Xray Core Installation ---
 echo "Checking/Installing Xray (without geodata)..."
-bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
+bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
