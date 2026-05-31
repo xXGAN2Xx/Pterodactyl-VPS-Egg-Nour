@@ -70,25 +70,29 @@ cat > "\$CONFIG_PATH" << JSON
       "settings": {
         "clients": [
           {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-            "flow": "xtls-rprx-vision"
+            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
           }
         ],
         "decryption": "none"
       },
       "streamSettings": {
-        "network": "tcp",
+        "network": "grpc",
         "security": "reality",
-        "realitySettings": {
-          "dest": "playstation.net:443",
-          "serverNames": ["playstation.net"],
-          "privateKey": "oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE",
-          "shortIds": [""],
-          "spiderX": "/"
+        "packetEncoding": "xudp",
+        "grpcSettings": {
+          "serviceName": "game",
+          "multiMode": false
         },
         "sockopt": {
           "tcpFastOpen": true,
           "tcpNoDelay": true
+        },
+        "realitySettings": {
+          "dest": "www.cloudflare.com:443",
+          "serverNames": ["playstation.net"],
+          "privateKey": "oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE",
+          "shortIds": [""],
+          "spiderX": "/"
         }
       }
     }
@@ -107,7 +111,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo&sid=&spx=%2F&type=tcp&headerType=none#Nour-Gaming"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:${SERVER_PORT}?encryption=none&security=reality&sni=playstation.net&fp=chrome&pbk=oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo&type=grpc&serviceName=game&mode=gun&packetEncoding
 echo "=========================================================="
 
 echo "Starting Xray..."
