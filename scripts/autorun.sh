@@ -66,41 +66,36 @@ cat > "\$CONFIG_PATH" << JSON
   },
   "inbounds": [
     {
-      "port": \${SERVER_PORT},
+      "port": "${SERVER_PORT}",
       "listen": "0.0.0.0",
       "protocol": "vless",
       "settings": {
         "clients": [
           {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-            "flow": "xtls-rprx-vision"
+            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
           }
         ],
-        "decryption": "none",
-        "packetEncoding": "xudp"
+        "decryption": "none"
       },
       "streamSettings": {
-        "network": "tcp",
+        "network": "grpc",
         "security": "reality",
+        "packetEncoding": "xudp",
+        "grpcSettings": {
+          "serviceName": "game",
+          "multiMode": false
+        },
         "sockopt": {
           "tcpFastOpen": true,
-          "tcpKeepAliveIdle": 30
+          "tcpNoDelay": true
         },
         "realitySettings": {
-          "show": false,
-          "dest": "www.google.com:443",
-          "xver": 0,
-          "serverNames": [
-            "playstation.net",
-            "ekb.eg"
-          ],
-          "privateKey": "\${PRIVATE_KEY}",
+          "dest": "playstation.net:443",
+          "serverNames": ["playstation.net"],
+          "privateKey": "${PRIVATE_KEY}",
           "shortIds": [""],
           "spiderX": "/"
         }
-      },
-      "sniffing": {
-        "enabled": false
       }
     }
   ],
@@ -118,7 +113,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS+Reality GAMING UDP443 Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision-udp443&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp#Nour-Gaming-UDP443"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:${SERVER_PORT}?encryption=none&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=grpc&serviceName=game&mode=gun&packetEncoding=xudp#Nour-Gaming"
 echo "=========================================================="
 
 echo "Starting Xray..."
