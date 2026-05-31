@@ -48,7 +48,7 @@ CONFIG_PATH="\${CONFIG_DIR}/config.json"
 mkdir -p "\$CONFIG_DIR"
 
 # --- Xray Core Installation ---
-echo "Checking/Installing Xray (without geodata)..."
+echo "Checking/Installing Xray..."
 bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
 # --- Port ---
@@ -148,7 +148,7 @@ chmod +x "$XRAY_SCRIPT"
 echo ""
 printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
-echo " ║ ✅ SETUP COMPLETE - UDP443 MODE ║"
+echo " ║ ✅ SETUP COMPLETE                        ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
