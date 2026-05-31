@@ -137,5 +137,6 @@ echo " ╔═══════════════════════�
 echo " ║ ✅ SETUP COMPLETE ║"
 echo " ╠══════════════════════════════════════════╣"
 echo " ║ 🌍 Using IP → ${server_ip:-UNKNOWN_IP} "
+echo "bash //xray.sh"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
