@@ -88,7 +88,7 @@ cat > "\$CONFIG_PATH" << JSON
           "tcpNoDelay": true
         },
         "realitySettings": {
-          "dest": "www.google.com:443",
+          "dest": "www.cloudflare.com:443",
           "serverNames": ["playstation.net"],
           "privateKey": "oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE",
           "shortIds": [""],
