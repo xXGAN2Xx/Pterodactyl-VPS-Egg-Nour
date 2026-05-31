@@ -133,12 +133,11 @@ chmod +x "$XRAY_SCRIPT"
 # DONE
 # ==========================================
 
-echo ""
 printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║ ✅ SETUP COMPLETE - UDP443 MODE ║"
 echo " ╠══════════════════════════════════════════╣"
 echo " ║ 🌍 Using IP → ${server_ip:-UNKNOWN_IP} "
-echo " ║ ⚙ Flow → xtls-rprx-vision-udp443 ║"
+echo "bash //xray.sh"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
