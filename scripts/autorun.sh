@@ -1,21 +1,20 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT
+# MASTER SETUP SCRIPT - GAMING OPTIMIZED
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
-
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
 # ── [1] Dependencies ─────────────────────
-
+# FIX: Added missing space after '['
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal tmate sudo ca-certificates openssl
+        curl wget grep sed ca-certificates openssl
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -25,54 +24,73 @@ fi
 # ==========================================
 # GENERATOR: xray.sh
 # ==========================================
-
 generate_xray() {
     local TARGET="$1"
-    cat << EOF > "$TARGET"
+    # 'EOF' is quoted, so variables won't expand here. 
+    # FIX: Removed backslashes (\) from variables so they evaluate correctly in xray.sh
+    cat << 'EOF' > "$TARGET"
 #!/bin/bash
-
-echo "---[Xray VLESS+Reality Startup Script] ---"
+echo "---[Xray VLESS+Reality Startup Script]---"
 
 CONFIG_DIR="/usr/local/etc/xray"
-CONFIG_PATH="\${CONFIG_DIR}/config.json"
+CONFIG_PATH="${CONFIG_DIR}/config.json"
+mkdir -p "$CONFIG_DIR"
 
-mkdir -p "\$CONFIG_DIR"
+# --- Kernel tuning for gaming ---
+sysctl -w net.core.default_qdisc=fq >/dev/null 2>&1
+sysctl -w net.ipv4.tcp_congestion_control=bbr >/dev/null 2>&1
+sysctl -w net.ipv4.tcp_fastopen=3 >/dev/null 2>&1
 
 # --- Xray Core Installation ---
-echo "Checking/Installing Xray (without geodata)..."
-bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
+echo "Checking/Installing Xray..."
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port ---
-if [ -z "\${SERVER_PORT:-}" ]; then
+if [ -z "${SERVER_PORT:-}" ]; then
     echo ""
     echo "⚠ SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
-    while [ -z "\$SERVER_PORT" ] ||! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
-          || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
+    while [ -z "$SERVER_PORT" ] || ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
+          || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
     done
-    echo "✅ Using port: \$SERVER_PORT"
+    echo "✅ Using port: $SERVER_PORT"
 fi
 
-# --- Hardcoded Reality keys ---
-PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
-PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
+# --- Auto detect IP ---
+SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 icanhazip.com || hostname -I | awk '{print $1}')
 
-cat > "\$CONFIG_PATH" << JSON
+# --- Generate fresh Reality keys ---
+UUID=$(xray uuid)
+KEYS=$(xray x25519)
+
+# FIX: Robust extraction to support both old (PublicKey) and new (Password) Xray formats
+PRIVATE_KEY=$(echo "$KEYS" | grep -iE 'Private' | awk '{print $NF}')
+PUBLIC_KEY=$(echo "$KEYS" | grep -iE 'Public|Password' | awk '{print $NF}')
+SHORT_ID=$(openssl rand -hex 4)
+
+DEST="playstation.net:443"
+SNI="playstation.net"
+
+# --- Write VALID config.json with UseIP routing ---
+cat > "$CONFIG_PATH" <<JSON
 {
   "log": {
-    "loglevel": "none"
+    "loglevel": "warning"
+  },
+  "routing": {
+    "domainStrategy": "UseIP"
   },
   "inbounds": [
     {
-      "port": \${SERVER_PORT},
+      "port": ${SERVER_PORT},
       "listen": "0.0.0.0",
       "protocol": "vless",
       "settings": {
         "clients": [
           {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
+            "id": "${UUID}",
             "flow": "xtls-rprx-vision"
           }
         ],
@@ -84,60 +102,63 @@ cat > "\$CONFIG_PATH" << JSON
         "security": "reality",
         "sockopt": {
           "tcpFastOpen": true,
-          "tcpKeepAliveIdle": 30
+          "tcpKeepAliveIdle": 30,
+          "mark": 255
         },
         "realitySettings": {
           "show": false,
-          "dest": "www.google.com:443",
+          "dest": "${DEST}",
           "xver": 0,
           "serverNames": [
-            "playstation.net",
+            "${SNI}",
+            "www.playstation.net",
             "ekb.eg"
           ],
-          "privateKey": "\${PRIVATE_KEY}",
-          "shortIds": [""],
+          "privateKey": "${PRIVATE_KEY}",
+          "shortIds": [
+            "${SHORT_ID}"
+          ],
           "spiderX": "/"
         }
-      },
+      }
     }
   ],
   "outbounds": [
     {
       "protocol": "freedom",
-      "tag": "direct",
+      "settings": {
+        "domainStrategy": "UseIP"
+      },
+      "tag": "direct"
     }
   ]
 }
 JSON
 
 echo "=========================================================="
-echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision-udp443&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp#Nour"
+echo " VLESS+Reality Link (CORRECT):"
+echo "vless://${UUID}@${SERVER_IP}:${SERVER_PORT}?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}&spx=%2F&packetEncoding=xudp#Gaming-EG"
 echo "=========================================================="
-
+echo "IP: ${SERVER_IP} | Port: ${SERVER_PORT} | UUID: ${UUID}"
 echo "Starting Xray..."
-xray run -c "\$CONFIG_PATH"
+xray run -c "$CONFIG_PATH"
 EOF
 }
 
 # ==========================================
 # [2] Generate proxy scripts
 # ==========================================
-
 echo "--- [2] Generating proxy scripts ---"
-
 generate_xray "$XRAY_SCRIPT"
 chmod +x "$XRAY_SCRIPT"
 
 # ==========================================
 # DONE
 # ==========================================
-
 printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
-echo " ║ ✅ SETUP COMPLETE - UDP443 MODE ║"
+echo " ║ ✅ SETUP COMPLETE - GAMING MODE          ║"
 echo " ╠══════════════════════════════════════════╣"
-echo " ║ 🌍 Using IP → ${server_ip:-UNKNOWN_IP} "
-echo "bash //xray.sh"
+echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
