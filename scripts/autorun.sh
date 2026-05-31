@@ -77,7 +77,7 @@ SNI="playstation.net"
 cat > "$CONFIG_PATH" <<JSON
 {
   "log": {
-    "loglevel": "warning"
+    "loglevel": "none"
   },
   "routing": {
     "domainStrategy": "UseIP"
@@ -137,7 +137,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS+Reality Link (CORRECT):"
-echo "vless://${UUID}@${SERVER_IP}:${SERVER_PORT}?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}&spx=%2F&packetEncoding=xudp#Gaming-EG"
+echo "vless://${UUID}@${SERVER_IP}:${SERVER_PORT}?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}&spx=%2F&packetEncoding=xudp#Nour"
 echo "=========================================================="
 echo "IP: ${SERVER_IP} | Port: ${SERVER_PORT} | UUID: ${UUID}"
 echo "Starting Xray..."
