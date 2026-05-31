@@ -9,7 +9,6 @@ XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
 # ── [1] Dependencies ─────────────────────
-# FIX: Added missing space after '['
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
@@ -26,8 +25,6 @@ fi
 # ==========================================
 generate_xray() {
     local TARGET="$1"
-    # 'EOF' is quoted, so variables won't expand here. 
-    # FIX: Removed backslashes (\) from variables so they evaluate correctly in xray.sh
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 echo "---[Xray VLESS+Reality Startup Script]---"
@@ -61,14 +58,11 @@ fi
 # --- Auto detect IP ---
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 icanhazip.com || hostname -I | awk '{print $1}')
 
-# --- Generate fresh Reality keys ---
-UUID=$(xray uuid)
-KEYS=$(xray x25519)
-
-# FIX: Robust extraction to support both old (PublicKey) and new (Password) Xray formats
-PRIVATE_KEY=$(echo "$KEYS" | grep -iE 'Private' | awk '{print $NF}')
-PUBLIC_KEY=$(echo "$KEYS" | grep -iE 'Public|Password' | awk '{print $NF}')
-SHORT_ID=$(openssl rand -hex 4)
+# --- Hardcoded Reality keys and UUID ---
+UUID="9f2b4b10-6818-492e-a157-d5131d450c7b"
+PRIVATE_KEY="M4cZLR81ErNfxnG1fAnNUIATs_UXqe6HR78wINhH7RA"
+PUBLIC_KEY="ioE61VC3V30U7IdRmQ3bjhOq2ij9tPhVIgAD4JZ4YRY"
+SHORT_ID=""
 
 DEST="playstation.net:443"
 SNI="playstation.net"
