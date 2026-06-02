@@ -9,7 +9,7 @@ XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
-# ── [1] Dependencies & System Optimization ─────────────────────
+# == [1] Dependencies & System Optimization ================
 
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
