@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# ==========================================
-# MASTER SETUP SCRIPT
-# ==========================================
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
 
