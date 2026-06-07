@@ -99,7 +99,7 @@ cat > "\$CONFIG_PATH" << JSON
         ]
       },
       "streamSettings": {
-        "network": "hysteria2",
+        "network": "hysteria",
         "security": "tls",
         "tlsSettings": {
           "certificates": [
