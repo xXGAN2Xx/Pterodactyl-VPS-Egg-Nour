@@ -1,4 +1,9 @@
+```bash
 #!/bin/bash
+
+# ==========================================
+# MASTER SETUP SCRIPT
+# ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
@@ -27,12 +32,14 @@ generate_xray() {
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "---[Xray VLESS+Reality Startup Script] ---"
+echo "---[Xray Hysteria2 Startup Script] ---"
 
 CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
+CERT_DIR="/usr/local/etc/xray/cert"
 
 mkdir -p "\$CONFIG_DIR"
+mkdir -p "\$CERT_DIR"
 
 # --- Xray Core Installation ---
 echo "Checking/Installing Xray..."
@@ -51,9 +58,27 @@ if [ -z "\${SERVER_PORT:-}" ]; then
     echo "✅ Using port: \$SERVER_PORT"
 fi
 
-# --- Hardcoded Reality keys ---
-PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
-PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
+# --- Generate Self-Signed TLS Certificate ---
+CERT_FILE="\${CERT_DIR}/server.crt"
+KEY_FILE="\${CERT_DIR}/server.key"
+
+if [ ! -f "\$CERT_FILE" ] || [ ! -f "\$KEY_FILE" ]; then
+    echo "Generating self-signed TLS certificate..."
+    openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
+        -x509 -sha256 -days 3650 -nodes \
+        -out "\$CERT_FILE" -keyout "\$KEY_FILE" \
+        -subj "/CN=google.com" 2>/dev/null
+    echo "✅ Certificate generated."
+else
+    echo "✅ Certificate already exists. Skipping."
+fi
+
+# --- Hysteria2 Auth Password ---
+HY2_PASSWORD="NourHysteria2"
+
+# --- Bandwidth (server-side limit) ---
+UP_BW="100 mbps"
+DOWN_BW="100 mbps"
 
 cat > "\$CONFIG_PATH" << JSON
 {
@@ -64,35 +89,27 @@ cat > "\$CONFIG_PATH" << JSON
     {
       "port": \${SERVER_PORT},
       "listen": "0.0.0.0",
-      "protocol": "vless",
+      "protocol": "hysteria2",
       "settings": {
-        "clients": [
-          {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-            "flow": "xtls-rprx-vision"
-          }
-        ],
-        "decryption": "none",
-        "packetEncoding": "xudp"
+        "password": "\${HY2_PASSWORD}"
       },
       "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpKeepAliveIdle": 30
+        "network": "hysteria2",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "\${CERT_FILE}",
+              "keyFile": "\${KEY_FILE}"
+            }
+          ]
         },
-        "realitySettings": {
-          "show": false,
-          "dest": "www.google.com:443",
-          "xver": 0,
-          "serverNames": [
-            "playstation.net",
-            "ekb.eg"
-          ],
-          "privateKey": "\${PRIVATE_KEY}",
-          "shortIds": [""],
-          "spiderX": "/"
+        "hysteria2Settings": {
+          "up": "\${UP_BW}",
+          "down": "\${DOWN_BW}"
+        },
+        "sockopt": {
+          "udpFastOpen": true
         }
       }
     }
@@ -109,9 +126,11 @@ cat > "\$CONFIG_PATH" << JSON
 }
 JSON
 
+SERVER_IP=\$(curl -s4 ifconfig.me 2>/dev/null || curl -s4 icanhazip.com 2>/dev/null || echo "YOUR_SERVER_IP")
+
 echo "=========================================================="
-echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp&headerType=none#Nour"
+echo " Hysteria2 Link:"
+echo "hysteria2://\${HY2_PASSWORD}@\${SERVER_IP}:\${SERVER_PORT}?insecure=1&sni=google.com#Nour"
 echo "=========================================================="
 
 echo "Starting Xray..."
@@ -139,3 +158,4 @@ echo " ╠═══════════════════════�
 echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
+```
