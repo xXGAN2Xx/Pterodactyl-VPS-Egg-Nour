@@ -72,8 +72,8 @@ else
     echo "✅ Certificate already exists. Skipping."
 fi
 
-# --- Hysteria2 Auth Password ---
-HY2_PASSWORD="NourHysteria2"
+# --- Hysteria2 Auth ---
+HY2_AUTH="5783a3e7-e373-51cd-8642-c83782b807c5"
 
 # --- Bandwidth (server-side limit) ---
 UP_BW="100 mbps"
@@ -88,9 +88,15 @@ cat > "\$CONFIG_PATH" << JSON
     {
       "port": \${SERVER_PORT},
       "listen": "0.0.0.0",
-      "protocol": "hysteria2",
+      "protocol": "hysteria",
       "settings": {
-        "password": "\${HY2_PASSWORD}"
+        "version": 2,
+        "users": [
+          {
+            "auth": "\${HY2_AUTH}",
+            "level": 0
+          }
+        ]
       },
       "streamSettings": {
         "network": "hysteria2",
@@ -129,7 +135,7 @@ SERVER_IP=\$(curl -s4 ifconfig.me 2>/dev/null || curl -s4 icanhazip.com 2>/dev/n
 
 echo "=========================================================="
 echo " Hysteria2 Link:"
-echo "hysteria2://\${HY2_PASSWORD}@\${SERVER_IP}:\${SERVER_PORT}?insecure=1&sni=google.com#Nour"
+echo "hysteria2://\${HY2_AUTH}@\${SERVER_IP}:\${SERVER_PORT}?insecure=1&sni=google.com#Nour"
 echo "=========================================================="
 
 echo "Starting Xray..."
