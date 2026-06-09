@@ -40,7 +40,7 @@ mkdir -p "\$CONFIG_DIR"
 
 # --- Xray Core Installation ---
 echo "Checking/Installing Xray..."
-bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
