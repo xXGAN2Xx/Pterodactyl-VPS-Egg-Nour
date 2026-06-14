@@ -118,7 +118,7 @@ echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?
 echo "=========================================================="
 
 echo "Starting Xray..."
-xray run -c "\$CONFIG_PATH"
+systemctl enable --now xray
 EOF
 }
 
@@ -139,6 +139,6 @@ printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║ ✅ SETUP COMPLETE                        ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "systemctl enable --now xray"
+echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
