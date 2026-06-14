@@ -140,6 +140,6 @@ printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║ ✅ SETUP COMPLETE                        ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "bash $XRAY_SCRIPT"
+echo "screen -dmS ob2 bash -c 'bash $XRAY_SCRIPT"'
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
