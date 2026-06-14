@@ -14,8 +14,8 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y --no-install-recommends \
-        curl wget sed python3-minimal tmate sudo ca-certificates openssl grep
+    apt-get install -y \
+        curl wget sed python3-minimal tmate sudo ca-certificates openssl grep screen
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
