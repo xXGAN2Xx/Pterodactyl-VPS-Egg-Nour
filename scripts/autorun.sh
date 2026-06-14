@@ -140,7 +140,7 @@ chmod +x "$XRAY_SCRIPT"
 
 printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
-echo " ║ ✅ SETUP COMPLETE                        ║"
+echo " ║ ✅  SETUP COMPLETE                        ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
