@@ -15,7 +15,7 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y \
-        curl wget sed python3-minimal tmate sudo ca-certificates openssl grep screen
+        curl wget sed python3-minimal sudo ca-certificates openssl grep
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -139,6 +139,6 @@ printf "\e[1;36m"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║ ✅ SETUP COMPLETE                        ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "screen -dmS xray bash -c 'bash $XRAY_SCRIPT'"
+echo "bash $XRAY_SCRIPT > /dev/null 2>&1 &"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
