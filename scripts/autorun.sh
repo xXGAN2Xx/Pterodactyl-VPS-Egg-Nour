@@ -44,7 +44,6 @@ bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-releas
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
-    echo ""
     echo "⚠ SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
     while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
