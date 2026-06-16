@@ -60,60 +60,25 @@ PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
 
 cat > "\$CONFIG_PATH" << JSON
 {
-  "log": {
-    "disabled": true
-  },
-  "inbounds": [
-    {
-      "type": "vless",
-      "tag": "vless-in",
-      "listen": "0.0.0.0",
-      "listen_port": ${SERVER_PORT},
-      "users": [
-        {
-          "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-          "flow": "xtls-rprx-vision"
-        }
-      ],
-      "tls": {
+  "log": { "disabled": true },
+  "inbounds": [{
+    "type": "vless",
+    "tag": "vless-in",
+    "listen": "0.0.0.0",
+    "listen_port": ${SERVER_PORT},
+    "users": [{ "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision" }],
+    "tls": {
+      "enabled": true,
+      "server_names": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "pubgmobile.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
+      "reality": {
         "enabled": true,
-        "server_names": [
-          "ekb.eg",
-          "www.ekb.eg",
-          "c.whatsapp.net",
-          "www.facebook.com",
-          "m.facebook.com",
-          "www.messenger.com",
-          "maps.google.com",
-          "www.snapchat.com",
-          "pubgmobile.com",
-          "www.pubgmobile.com",
-          "m.youtube.com",
-          "www.youtube.com",
-          "m.tiktok.com",
-          "www.tiktok.com",
-          playstation.net
-        ],
-        "reality": {
-          "enabled": true,
-          "handshake": {
-            "server": "www.google.com",
-            "server_port": 443
-          },
-          "private_key": "${PRIVATE_KEY}",
-          "short_id": [
-            ""
-          ]
-        }
+        "handshake": { "server": "www.google.com", "server_port": 443 },
+        "private_key": "${PRIVATE_KEY}",
+        "short_id": [""]
       }
     }
-  ],
-  "outbounds": [
-    {
-      "type": "direct",
-      "tag": "direct"
-    }
-  ]
+  }],
+  "outbounds": [{ "type": "direct", "tag": "direct" }]
 }
 JSON
 
