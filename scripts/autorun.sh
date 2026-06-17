@@ -15,7 +15,7 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y \
-        curl wget sed python3 sudo grep
+        curl wget sed python3 sudo grep nano
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -55,8 +55,6 @@ if [ -z "\${SERVER_PORT:-}" ]; then
 fi
 
 # --- Hardcoded Reality keys ---
-PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
-PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
 
 cat > "\$CONFIG_PATH" << JSON
 {
@@ -69,11 +67,11 @@ cat > "\$CONFIG_PATH" << JSON
     "users": [{ "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision" }],
     "tls": {
       "enabled": true,
-      "server_names": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "pubgmobile.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
+      "server_name": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "pubgmobile.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
       "reality": {
         "enabled": true,
         "handshake": { "server": "www.google.com", "server_port": 443 },
-        "private_key": "${PRIVATE_KEY}",
+        "private_key": "oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE",
         "short_id": [""]
       }
     }
@@ -84,7 +82,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@\${SERVER_IP}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp#Nour"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@\${SERVER_IP}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo&type=tcp#Nour"
 echo "=========================================================="
 
 echo "Starting sing-box..."
