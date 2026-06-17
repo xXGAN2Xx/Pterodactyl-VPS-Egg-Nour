@@ -67,7 +67,7 @@ cat > "\$CONFIG_PATH" << JSON
     "users": [{ "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision" }],
     "tls": {
       "enabled": true,
-      "server_name": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "pubgmobile.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
+      "server_name": "playstation.net",
       "reality": {
         "enabled": true,
         "handshake": { "server": "www.google.com", "server_port": 443 },
