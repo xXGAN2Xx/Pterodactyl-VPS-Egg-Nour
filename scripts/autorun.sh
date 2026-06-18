@@ -60,39 +60,26 @@ PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
 
 cat > "\$CONFIG_PATH" << JSON
 {
-  "log": {
-    "loglevel": "none"
-  },
+  "log": {"loglevel": "none"},
   "inbounds": [
     {
       "port": \${SERVER_PORT},
       "listen": "0.0.0.0",
       "protocol": "vless",
       "settings": {
-        "clients": [
-          {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-            "flow": "xtls-rprx-vision"
-          }
-        ],
+        "clients": [{"id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision"}],
         "decryption": "none",
         "packetEncoding": "xudp"
       },
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpKeepAliveIdle": 30
-        },
+        "sockopt": {"tcpFastOpen": true, "tcpKeepAliveIdle": 30},
         "realitySettings": {
           "show": false,
           "dest": "www.google.com:443",
           "xver": 0,
-          "serverNames": [
-            "playstation.net",
-            "ekb.eg"
-          ],
+          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
           "privateKey": "\${PRIVATE_KEY}",
           "shortIds": [""],
           "spiderX": "/"
@@ -101,13 +88,7 @@ cat > "\$CONFIG_PATH" << JSON
     }
   ],
   "outbounds": [
-    {
-      "protocol": "freedom",
-      "tag": "direct",
-      "settings": {
-        "domainStrategy": "UseIPv4"
-      }
-    }
+    {"protocol": "freedom", "tag": "direct", "settings": {"domainStrategy": "UseIPv4"}}
   ]
 }
 JSON
