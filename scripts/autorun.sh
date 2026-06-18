@@ -60,6 +60,7 @@ PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
 
 cat > "\$CONFIG_PATH" << JSON
 {
+  "log": {"loglevel": "none"},
   "inbounds": [
     {
       "port": \${SERVER_PORT},
@@ -79,9 +80,7 @@ cat > "\$CONFIG_PATH" << JSON
       }
     }
   ],
-  "outbounds": [
-    {"protocol": "freedom"}
-  ]
+  "outbounds": [{"protocol": "freedom"}]
 }
 JSON
 
