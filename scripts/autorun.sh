@@ -91,8 +91,6 @@ echo "=========================================================="
 
 echo "Starting Xray..."
 systemctl enable --now xray
-echo "DOne"
-echo "Chacking that Xray is started?..."
 systemctl status xray
 EOF
 }
