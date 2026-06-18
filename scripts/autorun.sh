@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (sing-box Reality)
+# MASTER SETUP SCRIPT
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SINGBOX_SCRIPT="${SCRIPT_DIR}/singbox.sh"
+XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
@@ -15,7 +15,7 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y \
-        curl wget sed python3 sudo grep nano
+        curl wget sed python3 sudo grep
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -23,24 +23,24 @@ else
 fi
 
 # ==========================================
-# GENERATOR: singbox.sh
+# GENERATOR: xray.sh
 # ==========================================
 
-generate_singbox() {
+generate_xray() {
     local TARGET="$1"
     cat << EOF > "$TARGET"
 #!/bin/bash
 
-echo "---[sing-box VLESS+Reality Startup Script] ---"
+echo "---[Xray VLESS+Reality Startup Script] ---"
 
-CONFIG_DIR="/etc/sing-box"
+CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="\${CONFIG_DIR}/config.json"
 
 mkdir -p "\$CONFIG_DIR"
 
-# --- sing-box Installation ---
-echo "Checking/Installing sing-box..."
-curl -fsSL https://sing-box.app/install.sh | sh
+# --- Xray Core Installation ---
+echo "Checking/Installing Xray..."
+bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port ---
 if [ -z "\${SERVER_PORT:-}" ]; then
@@ -55,42 +55,73 @@ if [ -z "\${SERVER_PORT:-}" ]; then
 fi
 
 # --- Hardcoded Reality keys ---
+PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
+PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
 
 cat > "\$CONFIG_PATH" << JSON
 {
-  "log": { "disabled": true },
-  "inbounds": [{
-    "type": "vless",
-    "tag": "vless-in",
-    "listen": "0.0.0.0",
-    "listen_port": ${SERVER_PORT},
-    "users": [{ "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision" }],
-    "tls": {
-      "enabled": true,
-      "server_name": "playstation.net",
-      "reality": {
-        "enabled": true,
-        "handshake": { "server": "www.google.com", "server_port": 443 },
-        "private_key": "oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE",
-        "short_id": [""]
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "port": \${SERVER_PORT},
+      "listen": "0.0.0.0",
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none",
+        "packetEncoding": "xudp"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpKeepAliveIdle": 30
+        },
+        "realitySettings": {
+          "show": false,
+          "dest": "www.google.com:443",
+          "xver": 0,
+          "serverNames": [
+            "playstation.net",
+            "ekb.eg"
+          ],
+          "privateKey": "\${PRIVATE_KEY}",
+          "shortIds": [""],
+          "spiderX": "/"
+        }
       }
     }
-  }],
-  "outbounds": [{ "type": "direct", "tag": "direct" }]
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      }
+    }
+  ]
 }
 JSON
 
 echo "=========================================================="
 echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@\${SERVER_IP}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo&type=tcp#Nour"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp&headerType=none#Nour"
 echo "=========================================================="
 
-echo "Starting sing-box..."
-systemctl enable --now sing-box
-
-echo "Done"
-echo "Checking that sing-box is started?..."
-systemctl status sing-box
+echo "Starting Xray..."
+systemctl enable --now xray
+echo "DOne"
+echo "Chacking that Xray is started?..."
+systemctl status xray
 EOF
 }
 
@@ -100,8 +131,8 @@ EOF
 
 echo "--- [2] Generating proxy scripts ---"
 
-generate_singbox "$SINGBOX_SCRIPT"
-chmod +x "$SINGBOX_SCRIPT"
+generate_xray "$XRAY_SCRIPT"
+chmod +x "$XRAY_SCRIPT"
 
 # ==========================================
 # DONE
@@ -110,6 +141,6 @@ chmod +x "$SINGBOX_SCRIPT"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║ ✅  SETUP COMPLETE                        ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "bash $SINGBOX_SCRIPT"
+echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
