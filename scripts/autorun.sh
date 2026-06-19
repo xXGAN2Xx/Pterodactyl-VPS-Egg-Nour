@@ -66,14 +66,14 @@ cat > "\$CONFIG_PATH" << JSON
       "port": \${SERVER_PORT},
       "protocol": "vless",
       "settings": {
-        "clients": [{"id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision"}],
+        "clients": [{"id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision-udp443"}],
         "decryption": "none"
       },
       "streamSettings": {
         "security": "reality",
         "realitySettings": {
           "dest": "www.google.com:443",
-          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
+          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "playstation.net"],
           "privateKey": "\${PRIVATE_KEY}",
           "shortIds": [""]
         }
