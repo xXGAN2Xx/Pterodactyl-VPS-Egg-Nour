@@ -28,54 +28,58 @@ fi
 
 generate_xray() {
     local TARGET="$1"
-    cat << EOF > "$TARGET"
+    cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[Xray VLESS+Reality Startup Script] ---"
+echo "---[Xray VLESS RAW HTTP Startup Script] ---"
 
 CONFIG_DIR="/usr/local/etc/xray"
-CONFIG_PATH="\${CONFIG_DIR}/config.json"
+CONFIG_PATH="${CONFIG_DIR}/config.json"
 
-mkdir -p "\$CONFIG_DIR"
+mkdir -p "$CONFIG_DIR"
 
 # --- Xray Core Installation ---
 echo "Checking/Installing Xray..."
-bash -c "\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port ---
-if [ -z "\${SERVER_PORT:-}" ]; then
+if [ -z "${SERVER_PORT:-}" ]; then
     echo "⚠ SERVER_PORT is not set!"
     read -rp "SERVER_PORT: " SERVER_PORT
-    while [ -z "\$SERVER_PORT" ] || ! echo "\$SERVER_PORT" | grep -qE '^[0-9]+$' \\
-          || [ "\$SERVER_PORT" -lt 1 ] || [ "\$SERVER_PORT" -gt 65535 ]; do
+    while [ -z "$SERVER_PORT" ] || ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
+          || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
         echo "❌ Invalid port. Enter a number between 1 and 65535:"
         read -rp "SERVER_PORT: " SERVER_PORT
     done
-    echo "✅ Using port: \$SERVER_PORT"
+    echo "✅ Using port: $SERVER_PORT"
 fi
 
-# --- Hardcoded Reality keys ---
-PRIVATE_KEY="oNDJxLaAiXojgAcdW5gzwuQB_gMYL0DXfRnqswUKvTE"
-PUBLIC_KEY="oVRY8h7Njgw25j3CNhaJVMUys378tTvecrSRbrB3gyo"
+# --- Fetch Server IP for the link ---
+SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
-cat > "\$CONFIG_PATH" << JSON
+# --- Generate Xray Config ---
+cat > "$CONFIG_PATH" << JSON
 {
   "log": {"loglevel": "none"},
   "inbounds": [
     {
-      "port": \${SERVER_PORT},
+      "port": ${SERVER_PORT},
       "protocol": "vless",
       "settings": {
-        "clients": [{"id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e", "flow": "xtls-rprx-vision-udp443"}],
+        "clients": [
+          {
+            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+          }
+        ],
         "decryption": "none"
       },
       "streamSettings": {
-        "security": "reality",
-        "realitySettings": {
-          "dest": "www.google.com:443",
-          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "playstation.net"],
-          "privateKey": "\${PRIVATE_KEY}",
-          "shortIds": [""]
+        "network": "raw",
+        "security": "none",
+        "rawSettings": {
+          "header": {
+            "type": "http"
+          }
         }
       }
     }
@@ -85,13 +89,14 @@ cat > "\$CONFIG_PATH" << JSON
 JSON
 
 echo "=========================================================="
-echo " VLESS+Reality Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${server_ip}:\${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=\${PUBLIC_KEY}&type=tcp&headerType=none#Nour"
+echo " VLESS RAW HTTP Link:"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=raw&headerType=http#Nour"
 echo "=========================================================="
 
 echo "Starting Xray..."
 systemctl enable --now xray
-systemctl status xray
+systemctl restart xray
+systemctl status xray --no-pager
 EOF
 }
 
