@@ -59,7 +59,7 @@ SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 # --- Generate Xray Config ---
 cat > "$CONFIG_PATH" << JSON
 {
-  "log": {"loglevel": "none"},
+  "log": {"loglevel": "info"},
   "inbounds": [
     {
       "port": ${SERVER_PORT},
