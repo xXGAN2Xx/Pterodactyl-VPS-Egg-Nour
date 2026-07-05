@@ -112,7 +112,7 @@ cat > "$CONFIG_PATH" << JSON
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "www.cloudflare.com:443",
+          "dest": "www.microsoft.com:443",
           "xver": 0,
           "serverNames": [
             "playstation.net"
