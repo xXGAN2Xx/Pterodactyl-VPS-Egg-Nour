@@ -147,7 +147,7 @@ echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?
 echo "=========================================================="
 
 echo "Starting Xray..."
-xray run -c "\$CONFIG_PATH" > /dev/null 2>&1 &
+xray run -c "$CONFIG_PATH" > /dev/null 2>&1 &
 EOF
 }
 
