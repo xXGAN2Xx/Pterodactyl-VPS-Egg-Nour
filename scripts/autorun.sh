@@ -11,7 +11,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 
 # == [1] Dependencies ================
 
-if [! -f "$DEP_LOCK_FILE" ]; then
+if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y curl wget tmate python3-minimal
@@ -128,4 +128,4 @@ echo "--- [2] Generating xray.sh ---"
 generate_xray "$XRAY_SCRIPT"
 chmod +x "$XRAY_SCRIPT"
 
-echo "✅ DONE - run: bash $XRAY_SCRIPT"
+echo "bash $XRAY_SCRIPT"
