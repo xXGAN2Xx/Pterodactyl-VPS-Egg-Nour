@@ -15,7 +15,7 @@ if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
     apt-get install -y \
-        curl wget tmate grep sudo
+        curl wget tmate grep sudo python3-minimal
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -147,9 +147,7 @@ echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?
 echo "=========================================================="
 
 echo "Starting Xray..."
-systemctl enable --now xray
-systemctl restart xray
-systemctl status xray --no-pager
+xray run -c ${$CONFIG_PATH}
 EOF
 }
 
