@@ -123,11 +123,11 @@ cat > "$CONFIG_PATH" << JSON
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "www.google.com:443",
+          "dest": "www.playstation.com:443",
           "xver": 0,
-          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "playstation.net"],
-          "privateKey": "KJnLYyUW_AMYhoKdCwH4ZS8bq5XlcfoIpwSOlanWD0c",
-          "shortIds": [""]
+          "serverNames": ["playstation.net", "www.playstation.com"],
+          "privateKey": "mJn_wZy0NELpcZnktg6OA4J-yjRmr6DBT9DbccZLMl8",
+          "shortIds": ["eCF2fUZ7plb1zFn3SMKf8HVtnq-qcRad-VGagXbSOyY"]
         }
       }
     }
@@ -140,8 +140,8 @@ echo "=========================================================="
 echo " 1) VLESS RAW HTTP Link:"
 echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour-HTTP"
 echo ""
-echo " 2) VLESS REALITY TCP Link (no shortId):"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=7ZSGpEACOsc5XXADnkNH4KUgLJxG4JTFHi1pXBkHt2c&type=tcp#Nour-Reality"
+echo " 2) VLESS REALITY TCP Link:"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=4QKO7OU3OyeZJS2fSvHlkGgnF7kgyK4VdQZmp-AVokA&sid=eCF2fUZ7plb1zFn3SMKf8HVtnq-qcRad-VGagXbSOyY&type=tcp#Nour-Reality"
 echo "=========================================================="
 
 echo "Starting Xray..."
@@ -163,7 +163,7 @@ chmod +x "$XRAY_SCRIPT"
 # ==========================================
 
 echo " ╔══════════════════════════════════════════╗"
-echo " ║ ✅ SETUP COMPLETE ║"
+echo " ║           ✅ SETUP COMPLETE              ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
