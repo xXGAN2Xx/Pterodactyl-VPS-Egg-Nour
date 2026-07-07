@@ -168,3 +168,4 @@ echo " ╠═══════════════════════�
 echo "bash $XRAY_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
+echo "[::] [/]: Done (.s)! For help, type "help""
