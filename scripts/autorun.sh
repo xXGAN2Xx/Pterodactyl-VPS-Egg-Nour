@@ -126,13 +126,13 @@ cat > "$CONFIG_PATH" << JSON
           "dest": "www.google.com:443",
           "xver": 0,
           "serverNames": [
+            "playstation.net",
             "ekb.eg",
             "c.whatsapp.net",
             "m.facebook.com",
             "www.messenger.com",
             "maps.google.com",
-            "www.snapchat.com",
-            "playstation.net"
+            "www.snapchat.com"
           ],
           "privateKey": "mJn_wZy0NELpcZnktg6OA4J-yjRmr6DBT9DbccZLMl8",
           "shortIds": ["eCF2fUZ7plb1zFn3SMKf8HVtnq-qcRad-VGagXbSOyY"]
