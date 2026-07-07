@@ -135,7 +135,7 @@ cat > "$CONFIG_PATH" << JSON
             "www.snapchat.com"
           ],
           "privateKey": "mJn_wZy0NELpcZnktg6OA4J-yjRmr6DBT9DbccZLMl8",
-          "shortIds": ["eCF2fUZ7plb1zFn3SMKf8HVtnq-qcRad-VGagXbSOyY"]
+          "shortIds": [""]
         }
       }
     }
@@ -149,7 +149,7 @@ echo " 1) VLESS RAW HTTP Link:"
 echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour-HTTP"
 echo ""
 echo " 2) VLESS REALITY TCP Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=4QKO7OU3OyeZJS2fSvHlkGgnF7kgyK4VdQZmp-AVokA&sid=eCF2fUZ7plb1zFn3SMKf8HVtnq-qcRad-VGagXbSOyY&type=tcp#Nour-Reality"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=4QKO7OU3OyeZJS2fSvHlkGgnF7kgyK4VdQZmp-AVokA&type=tcp#Nour-Reality"
 echo "=========================================================="
 
 echo "Starting Xray..."
