@@ -123,9 +123,9 @@ cat > "$CONFIG_PATH" << JSON
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "www.playstation.com:443",
+          "dest": "www.google.com:443",
           "xver": 0,
-          "serverNames": ["playstation.net", "www.playstation.com"],
+          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "playstation.net"],
           "privateKey": "mJn_wZy0NELpcZnktg6OA4J-yjRmr6DBT9DbccZLMl8",
           "shortIds": ["eCF2fUZ7plb1zFn3SMKf8HVtnq-qcRad-VGagXbSOyY"]
         }
