@@ -35,35 +35,24 @@ echo "---[Xray VLESS Reality Startup Script] ---"
 
 CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
-PORTS_FILE="${CONFIG_DIR}/ports.env"
 
 mkdir -p "$CONFIG_DIR"
-
-# --- Load Saved Reality Port ---
-if [ -f "$PORTS_FILE" ]; then
-    [ -z "${REALITY_PORT:-}" ] && REALITY_PORT=$(grep -m1 '^REALITY_PORT=' "$PORTS_FILE" | cut -d= -f2)
-fi
 
 # --- Xray Core Installation ---
 echo "Checking/Installing Xray..."
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port for REALITY ---
-if [ -z "${REALITY_PORT:-}" ]; then
-    echo "⚠ REALITY_PORT is not set!"
-    read -rp "REALITY_PORT (for VLESS Reality TCP): " REALITY_PORT
+if [ -z "${SERVER_PORT:-}" ]; then
+    echo "⚠ SERVER_PORT is not set!"
+    read -rp "SERVER_PORT (for VLESS Reality TCP): " SERVER_PORT
 fi
-while [ -z "$REALITY_PORT" ] || ! echo "$REALITY_PORT" | grep -qE '^[0-9]+$' \
-      || [ "$REALITY_PORT" -lt 1 ] || [ "$REALITY_PORT" -gt 65535 ]; do
+while [ -z "$SERVER_PORT" ] || ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
+      || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
     echo "❌ Invalid port. Enter a number between 1 and 65535:"
-    read -rp "REALITY_PORT: " REALITY_PORT
+    read -rp "SERVER_PORT: " SERVER_PORT
 done
-echo "✅ Using Reality port: $REALITY_PORT"
-
-# --- Save Reality Port for Next Run ---
-cat > "$PORTS_FILE" << PORTSEOF
-REALITY_PORT=${REALITY_PORT}
-PORTSEOF
+echo "✅ Using Reality port: $SERVER_PORT"
 
 # --- Fetch Server IP ---
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
@@ -74,7 +63,7 @@ cat > "$CONFIG_PATH" << JSON
   "log": {"loglevel": "none"},
   "inbounds": [
     {
-      "port": ${REALITY_PORT},
+      "port": ${SERVER_PORT},
       "protocol": "vless",
       "settings": {
         "clients": [
@@ -113,7 +102,7 @@ JSON
 
 echo "=========================================================="
 echo " VLESS REALITY TCP Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${REALITY_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=4QKO7OU3OyeZJS2fSvHlkGgnF7kgyK4VdQZmp-AVokA&type=tcp#Nour-Reality"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=4QKO7OU3OyeZJS2fSvHlkGgnF7kgyK4VdQZmp-AVokA&type=tcp#Nour-Reality"
 echo "=========================================================="
 
 echo "Starting Xray..."
