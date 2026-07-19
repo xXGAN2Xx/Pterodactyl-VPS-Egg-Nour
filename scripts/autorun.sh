@@ -5,7 +5,7 @@
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-XRAY_SCRIPT="${SCRIPT_DIR}/xray.sh"
+SINGBOX_SCRIPT="${SCRIPT_DIR}/singbox.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
@@ -23,90 +23,86 @@ else
 fi
 
 # ==========================================
-# GENERATOR: xray.sh
+# GENERATOR: singbox.sh
 # ==========================================
 
-generate_xray() {
+generate_singbox() {
     local TARGET="$1"
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[Xray VLESS Reality Startup Script] ---"
+echo "---[Sing-box VLESS HTTP Startup Script]---"
 
-CONFIG_DIR="/usr/local/etc/xray"
+CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
 
 mkdir -p "$CONFIG_DIR"
 
-# --- Xray Core Installation ---
-echo "Checking/Installing Xray..."
-bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
+# --- sing-box Core Installation ---
+echo "Checking/Installing sing-box..."
+curl -fsSL https://sing-box.app/install.sh | sh
 
-# --- Port for REALITY ---
+# --- Port for VLESS ---
 if [ -z "${SERVER_PORT:-}" ]; then
     echo "⚠ SERVER_PORT is not set!"
-    read -rp "SERVER_PORT (for VLESS Reality TCP): " SERVER_PORT
+    read -rp "SERVER_PORT (for VLESS HTTP): " SERVER_PORT
 fi
 while [ -z "$SERVER_PORT" ] || ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
       || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
     echo "❌ Invalid port. Enter a number between 1 and 65535:"
     read -rp "SERVER_PORT: " SERVER_PORT
 done
-echo "✅ Using Reality port: $SERVER_PORT"
+echo "✅ Using VLESS port: $SERVER_PORT"
 
 # --- Fetch Server IP ---
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
-# --- Generate Xray Config ---
+# --- Generate sing-box Config ---
 cat > "$CONFIG_PATH" << JSON
 {
-  "log": {"loglevel": "none"},
+  "log": {
+    "disabled": true,
+  },
   "inbounds": [
     {
-      "port": ${SERVER_PORT},
-      "protocol": "vless",
-      "settings": {
-        "clients": [
-          {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-            "flow": "xtls-rprx-vision"
-          }
-        ],
-        "decryption": "none"
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "show": false,
-          "dest": "www.google.com:443",
-          "xver": 0,
-          "serverNames": [
-            "playstation.net",
-            "ekb.eg",
-            "c.whatsapp.net",
-            "m.facebook.com",
-            "www.messenger.com",
-            "maps.google.com",
-            "www.snapchat.com"
-          ],
-          "privateKey": "mJn_wZy0NELpcZnktg6OA4J-yjRmr6DBT9DbccZLMl8",
-          "shortIds": [""]
+      "type": "vless",
+      "tag": "vless-in",
+      "listen": "::",
+      "listen_port": ${SERVER_PORT},
+      "users": [
+        {
+          "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
+          "flow": ""
         }
+      ],
+      "transport": {
+        "type": "http",
+        "path": "/"
       }
     }
   ],
-  "outbounds": [{"protocol": "freedom"}]
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ]
 }
 JSON
 
+echo "Validating configuration..."
+if ! sing-box check -c "$CONFIG_PATH"; then
+    echo "❌ Config validation failed, aborting."
+    exit 1
+fi
+
 echo "=========================================================="
-echo " VLESS REALITY TCP Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=4QKO7OU3OyeZJS2fSvHlkGgnF7kgyK4VdQZmp-AVokA&type=tcp#Nour-Reality"
+echo " VLESS RAW+HTTP Link:"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=http&host=playstation.net#Nour-VLESS-HTTP"
 echo "=========================================================="
 
-echo "Starting Xray..."
-xray run -c "$CONFIG_PATH" > /dev/null 2>&1 &
+echo "Starting sing-box..."
+sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
 EOF
 }
 
@@ -116,8 +112,8 @@ EOF
 
 echo "--- [2] Generating proxy scripts ---"
 
-generate_xray "$XRAY_SCRIPT"
-chmod +x "$XRAY_SCRIPT"
+generate_singbox "$SINGBOX_SCRIPT"
+chmod +x "$SINGBOX_SCRIPT"
 
 # ==========================================
 # DONE
@@ -126,7 +122,7 @@ chmod +x "$XRAY_SCRIPT"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "bash $XRAY_SCRIPT"
+echo "bash $SINGBOX_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
 echo '[::] [/]: Done (.s)! For help, type "help"'
