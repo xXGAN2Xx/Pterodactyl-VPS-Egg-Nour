@@ -98,7 +98,7 @@ fi
 
 echo "=========================================================="
 echo " VLESS RAW+HTTP Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour-VLESS-HTTP"
+echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
 echo "=========================================================="
 
 echo "Starting sing-box..."
