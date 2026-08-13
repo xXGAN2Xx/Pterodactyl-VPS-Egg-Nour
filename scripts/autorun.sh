@@ -5,7 +5,7 @@
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SINGBOX_SCRIPT="${SCRIPT_DIR}/singbox.sh"
+NRNET_SCRIPT="${SCRIPT_DIR}/nrnet.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
@@ -23,24 +23,24 @@ else
 fi
 
 # ==========================================
-# GENERATOR: singbox.sh
+# GENERATOR: nrnet.sh
 # ==========================================
 
-generate_singbox() {
+generate_nrnet() {
     local TARGET="$1"
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[Sing-box VLESS HTTP Startup Script]---"
+echo "---[Xray VLESS HTTP Startup Script]---"
 
-CONFIG_DIR="/etc/sing-box"
+CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
 
 mkdir -p "$CONFIG_DIR"
 
-# --- sing-box Core Installation ---
-echo "Checking/Installing sing-box..."
-curl -fsSL https://sing-box.app/install.sh | sh
+# --- Xray Core Installation ---
+
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
 # --- Port for VLESS ---
 if [ -z "${SERVER_PORT:-}" ]; then
@@ -57,41 +57,45 @@ echo "✅ Using VLESS port: $SERVER_PORT"
 # --- Fetch Server IP ---
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
-# --- Generate sing-box Config ---
+# --- Generate Xray Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "disabled": true,
+    "loglevel": "none"
   },
   "inbounds": [
     {
-      "type": "vless",
-      "tag": "vless-in",
-      "listen": "::",
-      "listen_port": ${SERVER_PORT},
-      "users": [
-        {
-          "uuid": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e",
-          "flow": ""
+      "listen": "0.0.0.0",
+      "port": ${SERVER_PORT},
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "tcpSettings": {
+          "header": {
+            "type": "http"
+          }
         }
-      ],
-      "transport": {
-        "type": "http",
-        "path": "/"
       }
     }
   ],
   "outbounds": [
     {
-      "type": "direct",
-      "tag": "direct"
+      "protocol": "freedom"
     }
   ]
 }
 JSON
 
 echo "Validating configuration..."
-if ! sing-box check -c "$CONFIG_PATH"; then
+if ! xray -test -config "$CONFIG_PATH"; then
     echo "❌ Config validation failed, aborting."
     exit 1
 fi
@@ -101,8 +105,8 @@ echo " VLESS RAW+HTTP Link:"
 echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
 echo "=========================================================="
 
-echo "Starting sing-box..."
-sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
+echo "Starting Xray..."
+xray run -config "$CONFIG_PATH" > /dev/null 2>&1 &
 EOF
 }
 
@@ -112,8 +116,8 @@ EOF
 
 echo "--- [2] Generating proxy scripts ---"
 
-generate_singbox "$SINGBOX_SCRIPT"
-chmod +x "$SINGBOX_SCRIPT"
+generate_nrnet "$NRNET_SCRIPT"
+chmod +x "$NRNET_SCRIPT"
 
 # ==========================================
 # DONE
@@ -122,7 +126,7 @@ chmod +x "$SINGBOX_SCRIPT"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "bash $SINGBOX_SCRIPT"
+echo "bash $NRNET_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
 printf "\e[0m"
 echo '[::] [/]: Done (.s)! For help, type "help"'
