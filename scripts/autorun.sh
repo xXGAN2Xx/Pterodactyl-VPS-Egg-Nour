@@ -147,5 +147,6 @@ echo " ╔═══════════════════════�
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "Script By Nour Elden"
-echo "Run: bash $NRNET_SCRIPT"
+echo "Run:"
+echo "bash $NRNET_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
