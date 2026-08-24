@@ -91,7 +91,7 @@ cat > "$CONFIG_PATH" << JSON
           "dest": "www.google.com:443",
           "xver": 0,
           "serverNames": [
-            "www.google.com"
+            ""
           ],
           "privateKey": "${PRIVATE_KEY}",
           "shortIds": [
