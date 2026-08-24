@@ -90,9 +90,7 @@ cat > "$CONFIG_PATH" << JSON
           "show": false,
           "dest": "www.google.com:443",
           "xver": 0,
-          "serverNames": [
-            ""
-          ],
+          "serverNames": ["ekb.eg", "c.whatsapp.net", "m.facebook.com", "www.messenger.com", "maps.google.com", "www.snapchat.com", "m.youtube.com", "m.tiktok.com", "playstation.net"],
           "privateKey": "${PRIVATE_KEY}",
           "shortIds": [
             ""
