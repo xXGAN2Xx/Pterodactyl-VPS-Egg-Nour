@@ -115,7 +115,7 @@ if ! xray -test -config "$CONFIG_PATH"; then
     exit 1
 fi
 
-VLESS_LINK="vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?security=reality&encryption=none&pbk=${PUBLIC_KEY}&headerType=none&fp=chrome&spx=%2F&type=tcp&flow=xtls-rprx-vision&sni=www.google.com&sid=#Nour-REALITY"
+VLESS_LINK="vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?security=reality&encryption=none&pbk=${PUBLIC_KEY}&headerType=none&fp=chrome&spx=%2F&type=tcp&flow=xtls-rprx-vision&sni=playstation.net&sid=#Nour-REALITY"
 
 echo "=========================================================="
 echo " ✅ VLESS + REALITY + Vision Link:"
