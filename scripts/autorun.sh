@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT
+# MASTER SETUP SCRIPT (VLESS + REALITY + Vision)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,8 +14,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y \
-        curl wget tmate sudo python3-minimal
+    apt-get install -y curl wget sudo python3-minimal
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -31,7 +30,7 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[Xray VLESS HTTP Startup Script]---"
+echo "---[ Xray VLESS + REALITY + Vision Startup Script ]---"
 
 CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
@@ -39,23 +38,30 @@ CONFIG_PATH="${CONFIG_DIR}/config.json"
 mkdir -p "$CONFIG_DIR"
 
 # --- Xray Core Installation ---
-
+echo "Installing/Updating Xray..."
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
-# --- Port for VLESS ---
+# --- Port Configuration (Default: 443 for REALITY) ---
 if [ -z "${SERVER_PORT:-}" ]; then
-    echo "⚠ SERVER_PORT is not set!"
-    read -rp "SERVER_PORT (for VLESS HTTP): " SERVER_PORT
+    read -rp "SERVER_PORT (Recommended 443) [443]: " SERVER_PORT
+    SERVER_PORT=${SERVER_PORT:-443}
 fi
-while [ -z "$SERVER_PORT" ] || ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
+while ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
       || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
     echo "❌ Invalid port. Enter a number between 1 and 65535:"
     read -rp "SERVER_PORT: " SERVER_PORT
 done
-echo "✅ Using VLESS port: $SERVER_PORT"
+echo "✅ Using Port: $SERVER_PORT"
 
 # --- Fetch Server IP ---
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
+
+# ==========================================
+# STATIC CREDENTIALS & KEYS
+# ==========================================
+CLIENT_UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
+PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 
 # --- Generate Xray Config ---
 cat > "$CONFIG_PATH" << JSON
@@ -71,17 +77,26 @@ cat > "$CONFIG_PATH" << JSON
       "settings": {
         "clients": [
           {
-            "id": "a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+            "id": "${CLIENT_UUID}",
+            "flow": "xtls-rprx-vision"
           }
         ],
         "decryption": "none"
       },
       "streamSettings": {
         "network": "tcp",
-        "tcpSettings": {
-          "header": {
-            "type": "http"
-          }
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "www.google.com:443",
+          "xver": 0,
+          "serverNames": [
+            "www.google.com"
+          ],
+          "privateKey": "${PRIVATE_KEY}",
+          "shortIds": [
+            ""
+          ]
         }
       }
     }
@@ -100,13 +115,18 @@ if ! xray -test -config "$CONFIG_PATH"; then
     exit 1
 fi
 
+VLESS_LINK="vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?security=reality&encryption=none&pbk=${PUBLIC_KEY}&headerType=none&fp=chrome&spx=%2F&type=tcp&flow=xtls-rprx-vision&sni=www.google.com&sid=#Nour-REALITY"
+
 echo "=========================================================="
-echo " VLESS RAW+HTTP Link:"
-echo "vless://a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e@${SERVER_IP}:${SERVER_PORT}?encryption=none&security=none&type=tcp&headerType=http&host=playstation.net#Nour"
+echo " ✅ VLESS + REALITY + Vision Link:"
+echo ""
+echo "${VLESS_LINK}"
+echo ""
 echo "=========================================================="
 
-echo "Starting Xray..."
+echo "Starting Xray service..."
 xray run -config "$CONFIG_PATH" > /dev/null 2>&1 &
+echo "Xray is up and running."
 EOF
 }
 
@@ -127,7 +147,5 @@ echo " ╔═══════════════════════�
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "Script By Nour Elden"
-echo "bash $NRNET_SCRIPT"
+echo "Run: bash $NRNET_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
-printf "\e[0m"
-echo '[::] [/]: Done (.s)! For help, type "help"'
