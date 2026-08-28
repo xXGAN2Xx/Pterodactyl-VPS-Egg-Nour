@@ -93,14 +93,21 @@ cat > "$CONFIG_PATH" << JSON
           "serverNames": [
           "ekb.eg",
           "c.whatsapp.net",
-          "m.facebook.com",
-          "www.messenger.com",
-          "maps.google.com",
+          "g.whatsapp.net",
+          "whatsapp.net",
+          "www.googleapis.com",
+          "googleapis.com",
+          "www.gstatic.com",
+          "gstatic.com",
+          "p16-common-sign.tiktokcdn.com"
+          "www.tiktokcdn.com",
+          "tiktokcdn.com",
+          "yt3.ggpht.com",
+          "www.ggpht.com",
+          "ggpht.com",
           "www.snapchat.com",
-          "m.youtube.com",
-          "m.tiktok.com",
-          "playstation.net"
-          ],
+          "snapchat.com",
+          "playstation.net"],
           "privateKey": "${PRIVATE_KEY}",
           "shortIds": [
             ""
