@@ -92,11 +92,8 @@ cat > "$CONFIG_PATH" << JSON
           "xver": 0,
           "serverNames": [
             "ekb.eg",
-            "c.whatsapp.net",
-            "g.whatsapp.net",
             "whatsapp.net",
-            "www.googleapis.com",
-            "googleapis.com",
+            "www.whatsapp.net",
             "www.gstatic.com",
             "gstatic.com",
             "p16-common-sign.tiktokcdn.com",
