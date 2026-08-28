@@ -134,7 +134,7 @@ fi
 echo "=========================================================="
 echo " ✅ VLESS + REALITY + Vision Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-REALITY-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
