@@ -99,7 +99,7 @@ cat > "$CONFIG_PATH" << JSON
           "googleapis.com",
           "www.gstatic.com",
           "gstatic.com",
-          "p16-common-sign.tiktokcdn.com"
+          "p16-common-sign.tiktokcdn.com",
           "www.tiktokcdn.com",
           "tiktokcdn.com",
           "yt3.ggpht.com",
