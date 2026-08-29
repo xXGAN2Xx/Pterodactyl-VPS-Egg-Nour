@@ -91,9 +91,9 @@ cat > "$CONFIG_PATH" << JSON
           "dest": "www.google.com:443",
           "xver": 0,
           "serverNames": [
-            "ekb.eg",
             "whatsapp.net",
             "www.snapchat.com",
+            "ekb.eg",
             "playstation.net"
           ],
           "privateKey": "${PRIVATE_KEY}",
