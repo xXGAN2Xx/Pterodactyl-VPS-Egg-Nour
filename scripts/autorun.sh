@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (VLESS + REALITY + Vision)
+# MASTER SETUP SCRIPT (sing-box VLESS + REALITY + Vision)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -30,16 +30,16 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ Xray VLESS + REALITY + Vision Startup Script ]---"
+echo "---[ sing-box VLESS + REALITY + Vision Startup Script ]---"
 
-CONFIG_DIR="/usr/local/etc/xray"
+CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
 
 mkdir -p "$CONFIG_DIR"
 
-# --- Xray Core Installation ---
-echo "Installing/Updating Xray..."
-bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
+# --- Official sing-box Installation ---
+echo "Installing/Updating sing-box via official script..."
+curl -fsSL https://sing-box.app/install.sh | bash
 
 # --- Port Configuration (Default: 443 for REALITY) ---
 if [ -z "${SERVER_PORT:-}" ]; then
@@ -63,41 +63,37 @@ CLIENT_UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
 PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
 PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 
-# --- Generate Xray Config ---
+# --- Generate sing-box Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "loglevel": "none"
+    "disabled": false,
+    "level": "warn",
+    "timestamp": true
   },
   "inbounds": [
     {
+      "type": "vless",
+      "tag": "vless-in",
       "listen": "0.0.0.0",
-      "port": ${SERVER_PORT},
-      "protocol": "vless",
-      "settings": {
-        "clients": [
-          {
-            "id": "${CLIENT_UUID}",
-            "flow": "xtls-rprx-vision"
-          }
-        ],
-        "decryption": "none"
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "show": false,
-          "dest": "www.google.com:443",
-          "xver": 0,
-          "serverNames": [
-            "playstation.net",
-            "www.snapchat.com",
-            "whatsapp.net",
-            "ekb.eg"
-          ],
-          "privateKey": "${PRIVATE_KEY}",
-          "shortIds": [
+      "listen_port": ${SERVER_PORT},
+      "users": [
+        {
+          "uuid": "${CLIENT_UUID}",
+          "flow": "xtls-rprx-vision"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "playstation.net",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "www.google.com",
+            "server_port": 443
+          },
+          "private_key": "${PRIVATE_KEY}",
+          "short_id": [
             ""
           ]
         }
@@ -106,14 +102,15 @@ cat > "$CONFIG_PATH" << JSON
   ],
   "outbounds": [
     {
-      "protocol": "freedom"
+      "type": "direct",
+      "tag": "direct"
     }
   ]
 }
 JSON
 
 echo "Validating configuration..."
-if ! xray -test -config "$CONFIG_PATH"; then
+if ! sing-box check -c "$CONFIG_PATH"; then
     echo "❌ Config validation failed, aborting."
     exit 1
 fi
@@ -125,9 +122,13 @@ echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xt
 echo ""
 echo "=========================================================="
 
-echo "Starting Xray service..."
-xray run -config "$CONFIG_PATH" > /dev/null 2>&1 &
-echo "Xray is up and running."
+echo "Starting sing-box service..."
+# Stop any existing sing-box instance
+pkill -f "sing-box run" 2>/dev/null || true
+
+# Run sing-box in background
+sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
+echo "sing-box is up and running."
 EOF
 }
 
@@ -147,7 +148,7 @@ chmod +x "$NRNET_SCRIPT"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "Script By Nour Elden"
+echo "Script By Nour Elden (Converted to sing-box)"
 echo "Run:"
 echo "bash $NRNET_SCRIPT"
 echo " ╚══════════════════════════════════════════╝"
