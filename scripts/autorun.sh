@@ -68,7 +68,7 @@ cat > "$CONFIG_PATH" << JSON
 {
   "log": {
     "disabled": true,
-    "level": "panic"
+    "level": "panic",
     "timestamp": true
   },
   "inbounds": [
