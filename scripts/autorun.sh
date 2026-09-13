@@ -86,6 +86,7 @@ cat > "$CONFIG_PATH" << JSON
       "tls": {
         "enabled": true,
         "server_name": "playstation.net",
+        "insecure": true,
         "reality": {
           "enabled": true,
           "handshake": {
@@ -118,7 +119,7 @@ fi
 echo "=========================================================="
 echo " ✅ VLESS + REALITY + Vision Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&allowInsecure=1&type=tcp&headerType=none#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
