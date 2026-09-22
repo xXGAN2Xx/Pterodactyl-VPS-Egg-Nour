@@ -67,9 +67,7 @@ PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "disabled": true,
-    "level": "panic",
-    "timestamp": true
+    "disabled": true
   },
   "inbounds": [
     {
