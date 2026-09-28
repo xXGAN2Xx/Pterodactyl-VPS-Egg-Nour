@@ -94,6 +94,7 @@ cat > "$CONFIG_PATH" << JSON
             "playstation.net",
             "www.snapchat.com",
             "whatsapp.net",
+            "www.youtube.com",
             "ekb.eg"
           ],
           "privateKey": "${PRIVATE_KEY}",
