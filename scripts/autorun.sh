@@ -92,14 +92,10 @@ cat > "$CONFIG_PATH" << JSON
           "xver": 0,
           "serverNames": [
             "playstation.net",
+            "ekb.eg",
+            "youtube.com",
             "www.snapchat.com",
-            "whatsapp.net",
-            "www.youtube.com",
-            "wetv.vip",
-            "www.netflix.com",
-            "shahid.mbc.net",
-            "shahid.net",
-            "ekb.eg"
+            "whatsapp.net"
           ],
           "privateKey": "${PRIVATE_KEY}",
           "shortIds": [
