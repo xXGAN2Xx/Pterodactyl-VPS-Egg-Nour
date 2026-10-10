@@ -93,7 +93,6 @@ cat > "$CONFIG_PATH" << JSON
           "serverNames": [
             "playstation.net",
             "ekb.eg",
-            "youtube.com",
             "netflix.com",
             "www.snapchat.com",
             "whatsapp.net"
