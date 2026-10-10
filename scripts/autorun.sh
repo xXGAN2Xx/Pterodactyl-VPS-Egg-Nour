@@ -94,9 +94,7 @@ cat > "$CONFIG_PATH" << JSON
             "playstation.net",
             "ekb.eg",
             "youtube.com",
-            "wetv.vip",
             "netflix.com",
-            "shahid.net",
             "www.snapchat.com",
             "whatsapp.net"
           ],
