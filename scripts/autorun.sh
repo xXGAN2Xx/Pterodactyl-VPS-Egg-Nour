@@ -125,7 +125,7 @@ echo ""
 echo "=========================================================="
 
 echo "Starting Xray service..."
-xray run -config "$CONFIG_PATH" > /dev/null 2>&1 &
+systemctl restart xray && systemctl enable --now xray && systemctl status xray
 echo "Xray is up and running."
 EOF
 }
