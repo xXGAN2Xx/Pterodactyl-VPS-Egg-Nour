@@ -125,7 +125,7 @@ echo ""
 echo "=========================================================="
 
 echo "Starting Xray service..."
-systemctl kill xray && systemctl enable --now xray && systemctl status xray
+systemctl restart xray && systemctl enable --now xray && systemctl status xray
 echo "Xray is up and running."
 EOF
 }
