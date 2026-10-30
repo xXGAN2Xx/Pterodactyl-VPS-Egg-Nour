@@ -125,7 +125,7 @@ echo ""
 echo "=========================================================="
 
 echo "Starting Xray service..."
-nohup xray run -c $CONFIG_PATH
+nohup xray run -c $CONFIG_PATH > /dev/null 2>&1 &
 echo "Xray is up and running."
 EOF
 }
