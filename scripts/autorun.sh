@@ -96,6 +96,7 @@ cat > "$CONFIG_PATH" << JSON
             "www.snapchat.com"
           ],
           "privateKey": "${PRIVATE_KEY}",
+          "minClientVer": "0.0.0",
           "shortIds": [
             ""
           ]
