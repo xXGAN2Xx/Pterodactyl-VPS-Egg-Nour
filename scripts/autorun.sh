@@ -125,7 +125,7 @@ echo ""
 echo "=========================================================="
 
 echo "Starting Xray service..."
-nohup xray run -c $CONFIG_PATH > /var/log/xray.log 2>&1 & sleep 1 && ps aux | grep [x]ray
+nohup xray run -c $CONFIG_PATH > /var/log/xray.log 2>&1 & sleep 2 && ps aux | grep [x]ray
 echo "Xray is up and running."
 EOF
 }
