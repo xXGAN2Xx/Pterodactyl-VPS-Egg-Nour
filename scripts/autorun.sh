@@ -59,7 +59,7 @@ SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 # ==========================================
 # STATIC CREDENTIALS & KEYS
 # ==========================================
-CLIENT_UUID="a4af6a92-4dba-4cd1-841d-8ac7b38f9d6e"
+CLIENT_UUID="00000000-0000-0000-0000-000000000000"
 PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
 PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 
