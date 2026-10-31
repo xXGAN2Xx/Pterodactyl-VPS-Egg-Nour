@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (sing-box VLESS + HTTP)
+# MASTER SETUP SCRIPT (sing-box Hysteria 2)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,7 +14,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y curl wget sudo nano tmate tar procps
+    apt-get install -y curl wget sudo nano tmate tar procps openssl
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -30,10 +30,12 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box VLESS + HTTP Startup Script ]---"
+echo "---[ sing-box Hysteria 2 Startup Script ]---"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
+CERT_PATH="${CONFIG_DIR}/cert.pem"
+KEY_PATH="${CONFIG_DIR}/key.pem"
 
 mkdir -p "$CONFIG_DIR"
 
@@ -45,7 +47,7 @@ pkill -f sing-box 2>/dev/null || true
 echo "Installing/Updating sing-box..."
 curl -fsSL https://sing-box.app/install.sh | sh
 
-# --- Port Configuration (Preserved, Default: 443) ---
+# --- Port Configuration (Default: 443) ---
 if [ -z "${SERVER_PORT:-}" ]; then
     read -rp "SERVER_PORT [443]: " SERVER_PORT
     SERVER_PORT=${SERVER_PORT:-443}
@@ -61,12 +63,16 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 # ==========================================
-# CREDENTIALS & SNI/HOST SETTINGS
+# CREDENTIALS & TLS CERTIFICATE GENERATION
 # ==========================================
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
 SNI_HOST="www.snapchat.com"
 
-# --- Generate sing-box Config ---
+echo "Generating self-signed TLS certificate for ${SNI_HOST}..."
+openssl ecparam -name prime256v1 -genkey -noout -out "$KEY_PATH"
+openssl req -new -x509 -key "$KEY_PATH" -out "$CERT_PATH" -days 3650 -subj "/CN=${SNI_HOST}" > /dev/null 2>&1
+
+# --- Generate sing-box Hysteria 2 Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
@@ -74,22 +80,21 @@ cat > "$CONFIG_PATH" << JSON
   },
   "inbounds": [
     {
-      "type": "vless",
-      "tag": "vless-in",
+      "type": "hysteria2",
+      "tag": "hy2-in",
       "listen": "0.0.0.0",
       "listen_port": ${SERVER_PORT},
       "users": [
         {
           "name": "Nour",
-          "uuid": "${CLIENT_UUID}"
+          "password": "${CLIENT_UUID}"
         }
       ],
-      "transport": {
-        "type": "http",
-        "host": [
-          "${SNI_HOST}"
-        ],
-        "path": "/"
+      "ignore_client_bandwidth": false,
+      "tls": {
+        "enabled": true,
+        "certificate_path": "${CERT_PATH}",
+        "key_path": "${KEY_PATH}"
       }
     }
   ],
@@ -109,15 +114,15 @@ if ! sing-box check -c "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + HTTP Link:"
+echo " ✅ Hysteria 2 Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=${SNI_HOST}&type=http&sni=${SNI_HOST}#Nour-${SERVER_PORT}"
+echo "hysteria2://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}/?sni=${SNI_HOST}&insecure=1#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
 echo "Starting sing-box service..."
 nohup sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
-echo "sing-box is up and running."
+echo "sing-box Hysteria 2 is up and running."
 EOF
 }
 
