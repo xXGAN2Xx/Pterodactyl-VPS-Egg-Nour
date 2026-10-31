@@ -20,7 +20,7 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box VLESS + HTTP Startup Script (PRoot) ]---"
+echo "---[ sing-box VLESS + WebSocket Startup Script (PRoot) ]---"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
@@ -62,7 +62,7 @@ cat > "$CONFIG_PATH" << JSON
         }
       ],
       "transport": {
-        "type": "http",
+        "type": "ws",
         "path": "/"
       }
     }
@@ -83,9 +83,9 @@ if ! sing-box check -c "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + HTTP Link:"
+echo " ✅ VLESS + WebSocket Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=*&type=http#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=*&type=ws#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
