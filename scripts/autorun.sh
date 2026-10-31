@@ -20,7 +20,7 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box VLESS + REALITY + Vision Startup Script (PRoot) ]---"
+echo "---[ sing-box VLESS + HTTP Startup Script (PRoot) ]---"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
@@ -44,8 +44,6 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
-PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
-PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 
 cat > "$CONFIG_PATH" << JSON
 {
@@ -60,24 +58,12 @@ cat > "$CONFIG_PATH" << JSON
       "listen_port": ${SERVER_PORT},
       "users": [
         {
-          "uuid": "${CLIENT_UUID}",
-          "flow": "xtls-rprx-vision"
+          "uuid": "${CLIENT_UUID}"
         }
       ],
-      "tls": {
-        "enabled": true,
-        "server_name": "www.snapchat.com",
-        "reality": {
-          "enabled": true,
-          "handshake": {
-            "server": "www.snapchat.com",
-            "server_port": 443
-          },
-          "private_key": "${PRIVATE_KEY}",
-          "short_id": [
-            ""
-          ]
-        }
+      "transport": {
+        "type": "http",
+        "path": "/"
       }
     }
   ],
@@ -97,9 +83,9 @@ if ! sing-box check -c "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + REALITY + Vision Link:"
+echo " ✅ VLESS + HTTP Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.snapchat.com&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=*&type=http#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
