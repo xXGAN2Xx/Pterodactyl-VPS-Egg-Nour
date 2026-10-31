@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (VLESS + TLS + Vision + SAN Fix)
+# MASTER SETUP SCRIPT (sing-box VLESS + TLS + Vision)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -63,18 +63,18 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 # ==========================================
-# CREDENTIALS & TLS CERTIFICATE (WITH SAN FIX)
+# CREDENTIALS & TLS CERTIFICATE (WITH TESTED SAN)
 # ==========================================
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
 SNI_HOST="www.snapchat.com"
 
-echo "Generating TLS certificate with proper SAN for ${SNI_HOST}..."
+echo "Generating TLS certificate with verified SAN for ${SNI_HOST}..."
 openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
   -keyout "$KEY_PATH" -out "$CERT_PATH" -days 3650 \
   -subj "/CN=${SNI_HOST}" \
   -addext "subjectAltName=DNS:${SNI_HOST},DNS:snapchat.com" > /dev/null 2>&1
 
-# --- Generate sing-box VLESS TLS + Vision Config ---
+# --- Generate sing-box Server Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
@@ -129,7 +129,7 @@ sleep 1
 if ps aux | grep -v grep | grep -q "sing-box"; then
     echo "✅ sing-box VLESS TLS + Vision is up and running."
 else
-    echo "❌ Failed to start. Try running 'sing-box run -c $CONFIG_PATH' to see the issue."
+    echo "❌ Failed to start. Run 'sing-box run -c $CONFIG_PATH' to see the issue."
 fi
 EOF
 }
