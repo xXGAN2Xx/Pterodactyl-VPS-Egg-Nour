@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (sing-box Hysteria 2)
+# MASTER SETUP SCRIPT (VLESS + TLS + Vision + SAN Fix)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -30,7 +30,7 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box Hysteria 2 Startup Script ]---"
+echo "---[ sing-box VLESS + TLS + XTLS-Vision Startup Script ]---"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
@@ -47,10 +47,10 @@ pkill -f sing-box 2>/dev/null || true
 echo "Installing/Updating sing-box..."
 curl -fsSL https://sing-box.app/install.sh | sh
 
-# --- Port Configuration (Default: 443) ---
+# --- Port Configuration (Default: 25633) ---
 if [ -z "${SERVER_PORT:-}" ]; then
-    read -rp "SERVER_PORT [443]: " SERVER_PORT
-    SERVER_PORT=${SERVER_PORT:-443}
+    read -rp "SERVER_PORT [25633]: " SERVER_PORT
+    SERVER_PORT=${SERVER_PORT:-25633}
 fi
 while ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
       || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
@@ -63,34 +63,36 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 # ==========================================
-# CREDENTIALS & TLS CERTIFICATE GENERATION
+# CREDENTIALS & TLS CERTIFICATE (WITH SAN FIX)
 # ==========================================
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
 SNI_HOST="www.snapchat.com"
 
-echo "Generating self-signed TLS certificate for ${SNI_HOST}..."
-openssl ecparam -name prime256v1 -genkey -noout -out "$KEY_PATH"
-openssl req -new -x509 -key "$KEY_PATH" -out "$CERT_PATH" -days 3650 -subj "/CN=${SNI_HOST}" > /dev/null 2>&1
+echo "Generating TLS certificate with proper SAN for ${SNI_HOST}..."
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+  -keyout "$KEY_PATH" -out "$CERT_PATH" -days 3650 \
+  -subj "/CN=${SNI_HOST}" \
+  -addext "subjectAltName=DNS:${SNI_HOST},DNS:snapchat.com" > /dev/null 2>&1
 
-# --- Generate sing-box Hysteria 2 Config ---
+# --- Generate sing-box VLESS TLS + Vision Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "level": "warn"
+    "disabled": true
   },
   "inbounds": [
     {
-      "type": "hysteria2",
-      "tag": "hy2-in",
+      "type": "vless",
+      "tag": "vless-tls-in",
       "listen": "0.0.0.0",
       "listen_port": ${SERVER_PORT},
       "users": [
         {
           "name": "Nour",
-          "password": "${CLIENT_UUID}"
+          "uuid": "${CLIENT_UUID}",
+          "flow": "xtls-rprx-vision"
         }
       ],
-      "ignore_client_bandwidth": false,
       "tls": {
         "enabled": true,
         "certificate_path": "${CERT_PATH}",
@@ -114,15 +116,21 @@ if ! sing-box check -c "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ Hysteria 2 Link:"
+echo " ✅ VLESS + TLS + Vision Link:"
 echo ""
-echo "hysteria2://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}/?sni=${SNI_HOST}&insecure=1#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?security=tls&encryption=none&flow=xtls-rprx-vision&sni=${SNI_HOST}&allowInsecure=1&type=tcp#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
 echo "Starting sing-box service..."
 nohup sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
-echo "sing-box Hysteria 2 is up and running."
+sleep 1
+
+if ps aux | grep -v grep | grep -q "sing-box"; then
+    echo "✅ sing-box VLESS TLS + Vision is up and running."
+else
+    echo "❌ Failed to start. Try running 'sing-box run -c $CONFIG_PATH' to see the issue."
+fi
 EOF
 }
 
