@@ -111,12 +111,6 @@ cat > "$CONFIG_PATH" << JSON
 }
 JSON
 
-# Enforce Xray-install security permissions
-chown root:xray "$CONFIG_DIR"
-chmod 0750 "$CONFIG_DIR"
-chown root:xray "$CONFIG_PATH"
-chmod 0640 "$CONFIG_PATH"
-
 echo "Validating configuration..."
 if ! xray -test -config "$CONFIG_PATH"; then
     echo "❌ Config validation failed, aborting."
