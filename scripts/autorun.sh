@@ -1,56 +1,38 @@
 #!/bin/bash
 
-# ==========================================
-# MASTER SETUP SCRIPT (sing-box VLESS + TLS + Vision)
-# ==========================================
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 NRNET_SCRIPT="${SCRIPT_DIR}/nrnet.sh"
 
 DEP_LOCK_FILE="/etc/os_deps_installed"
 
-# == [1] Dependencies & System Optimization ================
-
 if [ ! -f "$DEP_LOCK_FILE" ]; then
-    echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
+    echo "--- First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y curl wget sudo nano tmate tar procps openssl
+    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
-    echo "--- [1] System Setup: Dependencies already installed. Skipping. ---"
+    echo "--- System Setup: Dependencies already installed. Skipping. ---"
 fi
-
-# ==========================================
-# GENERATOR: nrnet.sh
-# ==========================================
 
 generate_nrnet() {
     local TARGET="$1"
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box VLESS + TLS + XTLS-Vision Startup Script ]---"
+echo "---[ sing-box VLESS + REALITY + Vision Startup Script (PRoot) ]---"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
-CERT_PATH="${CONFIG_DIR}/cert.pem"
-KEY_PATH="${CONFIG_DIR}/key.pem"
 
 mkdir -p "$CONFIG_DIR"
 
-# --- Stop conflicting instances and free ports (Safe for PRoot) ---
-pkill -f xray 2>/dev/null || true
-pkill -f sing-box 2>/dev/null || true
-
-# --- sing-box Core Installation ---
 echo "Installing/Updating sing-box..."
 curl -fsSL https://sing-box.app/install.sh | sh
 
-# --- Port Configuration (Default: 25633) ---
 if [ -z "${SERVER_PORT:-}" ]; then
-    read -rp "SERVER_PORT [25633]: " SERVER_PORT
-    SERVER_PORT=${SERVER_PORT:-25633}
+    read -rp "SERVER_PORT (Recommended 443) [443]: " SERVER_PORT
+    SERVER_PORT=${SERVER_PORT:-443}
 fi
 while ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
       || [ "$SERVER_PORT" -lt 1 ] || [ "$SERVER_PORT" -gt 65535 ]; do
@@ -59,22 +41,12 @@ while ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
 done
 echo "✅ Using Port: $SERVER_PORT"
 
-# --- Fetch Server IP ---
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
-# ==========================================
-# CREDENTIALS & TLS CERTIFICATE (WITH TESTED SAN)
-# ==========================================
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
-SNI_HOST="www.snapchat.com"
+PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
+PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 
-echo "Generating TLS certificate with verified SAN for ${SNI_HOST}..."
-openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
-  -keyout "$KEY_PATH" -out "$CERT_PATH" -days 3650 \
-  -subj "/CN=${SNI_HOST}" \
-  -addext "subjectAltName=DNS:${SNI_HOST},DNS:snapchat.com" > /dev/null 2>&1
-
-# --- Generate sing-box Server Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
@@ -83,20 +55,29 @@ cat > "$CONFIG_PATH" << JSON
   "inbounds": [
     {
       "type": "vless",
-      "tag": "vless-tls-in",
+      "tag": "vless-in",
       "listen": "0.0.0.0",
       "listen_port": ${SERVER_PORT},
       "users": [
         {
-          "name": "Nour",
           "uuid": "${CLIENT_UUID}",
           "flow": "xtls-rprx-vision"
         }
       ],
       "tls": {
         "enabled": true,
-        "certificate_path": "${CERT_PATH}",
-        "key_path": "${KEY_PATH}"
+        "server_name": "www.snapchat.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "www.snapchat.com",
+            "server_port": 443
+          },
+          "private_key": "${PRIVATE_KEY}",
+          "short_id": [
+            ""
+          ]
+        }
       }
     }
   ],
@@ -116,36 +97,30 @@ if ! sing-box check -c "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + TLS + Vision Link:"
+echo " ✅ VLESS + REALITY + Vision Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?security=tls&encryption=none&flow=xtls-rprx-vision&sni=${SNI_HOST}&allowInsecure=1&type=tcp#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.snapchat.com&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
-echo "Starting sing-box service..."
+echo "Stopping any existing sing-box process..."
+pkill -f "sing-box run" 2>/dev/null || true
+
+echo "Starting sing-box with nohup..."
 nohup sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
 sleep 1
 
-if ps aux | grep -v grep | grep -q "sing-box"; then
-    echo "✅ sing-box VLESS TLS + Vision is up and running."
+if pgrep -f "sing-box run" > /dev/null; then
+    echo "sing-box is up and running in background."
 else
-    echo "❌ Failed to start. Run 'sing-box run -c $CONFIG_PATH' to see the issue."
+    echo "⚠️ Process failed to stay alive. Test manually with: sing-box run -c $CONFIG_PATH"
 fi
 EOF
 }
 
-# ==========================================
-# [2] Generate proxy scripts
-# ==========================================
-
-echo "--- [2] Generating proxy scripts ---"
-
+echo "Generating proxy script..."
 generate_nrnet "$NRNET_SCRIPT"
 chmod +x "$NRNET_SCRIPT"
-
-# ==========================================
-# DONE
-# ==========================================
 
 echo " ╔══════════════════════════════════════════╗"
 echo " ║            ✅ SETUP COMPLETE             ║"
