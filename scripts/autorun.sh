@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (VLESS + Minimal TCP HTTP)
+# MASTER SETUP SCRIPT (sing-box VLESS + HTTP)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,7 +14,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- [1] First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y curl wget sudo nano tmate python3-minimal
+    apt-get install -y curl wget sudo nano tmate tar procps
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -30,20 +30,24 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ Xray VLESS + Minimal HTTP Startup Script ]---"
+echo "---[ sing-box VLESS + HTTP Startup Script ]---"
 
-CONFIG_DIR="/usr/local/etc/xray"
+CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
 
 mkdir -p "$CONFIG_DIR"
 
-# --- Xray Core Installation ---
-echo "Installing/Updating Xray..."
-bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
+# --- Stop conflicting instances and free ports (Safe for PRoot) ---
+pkill -f xray 2>/dev/null || true
+pkill -f sing-box 2>/dev/null || true
 
-# --- Port Configuration (Kept as 443) ---
+# --- sing-box Core Installation ---
+echo "Installing/Updating sing-box..."
+curl -fsSL https://sing-box.app/install.sh | sh
+
+# --- Port Configuration (Preserved, Default: 443) ---
 if [ -z "${SERVER_PORT:-}" ]; then
-    read -rp "SERVER_PORT (Recommended 443) [443]: " SERVER_PORT
+    read -rp "SERVER_PORT [443]: " SERVER_PORT
     SERVER_PORT=${SERVER_PORT:-443}
 fi
 while ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
@@ -57,72 +61,63 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 # ==========================================
-# STATIC CREDENTIALS
+# CREDENTIALS & SNI/HOST SETTINGS
 # ==========================================
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
-BUG_HOST="www.snapchat.com"
+SNI_HOST="www.snapchat.com"
 
-# --- Generate Stripped Xray Config ---
+# --- Generate sing-box Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "loglevel": "none"
+    "level": "warn"
   },
   "inbounds": [
     {
+      "type": "vless",
+      "tag": "vless-in",
       "listen": "0.0.0.0",
-      "port": ${SERVER_PORT},
-      "protocol": "vless",
-      "settings": {
-        "clients": [
-          {
-            "id": "${CLIENT_UUID}"
-          }
-        ],
-        "decryption": "none"
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "none",
-        "tcpSettings": {
-          "header": {
-            "type": "http",
-            "request": {
-              "headers": {
-                "Host": [
-                  "${BUG_HOST}"
-                ]
-              }
-            }
-          }
+      "listen_port": ${SERVER_PORT},
+      "users": [
+        {
+          "name": "Nour",
+          "uuid": "${CLIENT_UUID}"
         }
+      ],
+      "transport": {
+        "type": "http",
+        "host": [
+          "${SNI_HOST}"
+        ],
+        "path": "/"
       }
     }
   ],
   "outbounds": [
     {
-      "protocol": "freedom"
+      "type": "direct",
+      "tag": "direct"
     }
   ]
 }
 JSON
 
 echo "Validating configuration..."
-if ! xray -test -config "$CONFIG_PATH"; then
+if ! sing-box check -c "$CONFIG_PATH"; then
     echo "❌ Config validation failed, aborting."
     exit 1
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + TCP HTTP Link:"
+echo " ✅ VLESS + HTTP Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=${BUG_HOST}&type=tcp&headerType=http#Nour-Snapchat-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=${SNI_HOST}&type=http&sni=${SNI_HOST}#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
-echo "Starting Xray service..."
-nohup xray run -c "$CONFIG_PATH" > /dev/null 2>&1 &
-echo "Xray is up and running."
+echo "Starting sing-box service..."
+nohup sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
+echo "sing-box is up and running."
 EOF
 }
 
