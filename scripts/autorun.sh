@@ -67,7 +67,7 @@ PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "loglevel": "info"
+    "loglevel": "none"
   },
   "inbounds": [
     {
@@ -126,8 +126,7 @@ echo ""
 echo "=========================================================="
 
 echo "Starting Xray service..."
-xray run -c $CONFIG_PATH
-# nohup xray run -c $CONFIG_PATH > /dev/null 2>&1 &
+nohup xray run -c $CONFIG_PATH > /dev/null 2>&1 &
 echo "Xray is up and running."
 EOF
 }
