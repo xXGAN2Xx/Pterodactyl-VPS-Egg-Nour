@@ -20,7 +20,15 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box VLESS + WebSocket Startup Script (PRoot) ]---"
+echo "---[ sing-box VLESS + REALITY + Vision Startup Script (PRoot) ]---"
+
+# Read argument directly (works with or without --)
+RAW_ARG="$1"
+SNI="${RAW_ARG#--}"
+SNI="${SNI#-}"
+SNI="${SNI:-playstation.net}"
+
+echo "✅ Active SNI: $SNI"
 
 CONFIG_DIR="/etc/sing-box"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
@@ -44,6 +52,8 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
+PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
+PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 
 cat > "$CONFIG_PATH" << JSON
 {
@@ -58,12 +68,24 @@ cat > "$CONFIG_PATH" << JSON
       "listen_port": ${SERVER_PORT},
       "users": [
         {
-          "uuid": "${CLIENT_UUID}"
+          "uuid": "${CLIENT_UUID}",
+          "flow": "xtls-rprx-vision"
         }
       ],
-      "transport": {
-        "type": "ws",
-        "path": "/"
+      "tls": {
+        "enabled": true,
+        "server_name": "${SNI}",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "google.com",
+            "server_port": 443
+          },
+          "private_key": "${PRIVATE_KEY}",
+          "short_id": [
+            ""
+          ]
+        }
       }
     }
   ],
@@ -83,9 +105,9 @@ if ! sing-box check -c "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + WebSocket Link:"
+echo " ✅ VLESS + REALITY + Vision Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=*&type=ws#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
@@ -112,6 +134,16 @@ echo " ╔═══════════════════════�
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "Script By Nour Elden"
-echo "Run:"
+echo "Usage Examples:"
+echo "  1) Default (playstation.net):"
 echo "bash $NRNET_SCRIPT"
+echo ""
+echo "  2) EKB:"
+echo "bash $NRNET_SCRIPT ekb.eg"
+echo ""
+echo "  3) Snapchat:"
+echo "bash $NRNET_SCRIPT www.snapchat.com"
+echo ""
+echo "  4) Netflix:"
+echo "bash $NRNET_SCRIPT netflix.com"
 echo " ╚══════════════════════════════════════════╝"
