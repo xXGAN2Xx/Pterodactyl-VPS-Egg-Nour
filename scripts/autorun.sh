@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# MASTER SETUP SCRIPT (VLESS + REALITY + Vision)
+# MASTER SETUP SCRIPT (VLESS + Minimal TCP HTTP)
 # ==========================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -30,7 +30,7 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ Xray VLESS + REALITY + Vision Startup Script ]---"
+echo "---[ Xray VLESS + Minimal HTTP Startup Script ]---"
 
 CONFIG_DIR="/usr/local/etc/xray"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
@@ -41,7 +41,7 @@ mkdir -p "$CONFIG_DIR"
 echo "Installing/Updating Xray..."
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata
 
-# --- Port Configuration (Default: 443 for REALITY) ---
+# --- Port Configuration (Kept as 443) ---
 if [ -z "${SERVER_PORT:-}" ]; then
     read -rp "SERVER_PORT (Recommended 443) [443]: " SERVER_PORT
     SERVER_PORT=${SERVER_PORT:-443}
@@ -57,13 +57,12 @@ echo "✅ Using Port: $SERVER_PORT"
 SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
 
 # ==========================================
-# STATIC CREDENTIALS & KEYS
+# STATIC CREDENTIALS
 # ==========================================
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
-PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
-PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
+BUG_HOST="www.snapchat.com"
 
-# --- Generate Xray Config ---
+# --- Generate Stripped Xray Config ---
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
@@ -77,29 +76,25 @@ cat > "$CONFIG_PATH" << JSON
       "settings": {
         "clients": [
           {
-            "id": "${CLIENT_UUID}",
-            "flow": "xtls-rprx-vision"
+            "id": "${CLIENT_UUID}"
           }
         ],
         "decryption": "none"
       },
       "streamSettings": {
         "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "show": false,
-          "dest": "www.google.com:443",
-          "xver": 0,
-          "serverNames": [
-            "playstation.net",
-            "ekb.eg",
-            "www.snapchat.com",
-            "netflix.com"
-          ],
-          "privateKey": "${PRIVATE_KEY}",
-          "shortIds": [
-            ""
-          ]
+        "security": "none",
+        "tcpSettings": {
+          "header": {
+            "type": "http",
+            "request": {
+              "headers": {
+                "Host": [
+                  "${BUG_HOST}"
+                ]
+              }
+            }
+          }
         }
       }
     }
@@ -119,14 +114,14 @@ if ! xray -test -config "$CONFIG_PATH"; then
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + REALITY + Vision Link:"
+echo " ✅ VLESS + TCP HTTP Link:"
 echo ""
-echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=playstation.net&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
+echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?path=%2F&security=none&encryption=none&host=${BUG_HOST}&type=tcp&headerType=http#Nour-Snapchat-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
 echo "Starting Xray service..."
-nohup xray run -c $CONFIG_PATH > /dev/null 2>&1 &
+nohup xray run -c "$CONFIG_PATH" > /dev/null 2>&1 &
 echo "Xray is up and running."
 EOF
 }
