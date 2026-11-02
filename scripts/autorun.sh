@@ -112,7 +112,7 @@ PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "loglevel": "info"
+    "loglevel": "none"
   },
   "inbounds": [
     {
@@ -184,8 +184,7 @@ echo "Stopping any existing Xray process..."
 pkill -f "$XRAY_BIN run" 2>/dev/null || true
 
 echo "Starting Xray with nohup..."
-# nohup "$XRAY_BIN" run -c "$CONFIG_PATH" > /dev/null 2>&1 &
-"$XRAY_BIN" run -c "$CONFIG_PATH"
+nohup "$XRAY_BIN" run -c "$CONFIG_PATH" > /dev/null 2>&1 &
 sleep 1
 
 if pgrep -f "$XRAY_BIN run" > /dev/null; then
