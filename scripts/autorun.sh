@@ -156,7 +156,7 @@ cat > "$CONFIG_PATH" << JSON
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "google.com:443",
+          "dest": "dl.google.com:443",
           "xver": 0,
           "serverNames": [
             "playstation.net",
@@ -169,6 +169,10 @@ cat > "$CONFIG_PATH" << JSON
           "shortIds": [
             ""
           ]
+        },
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpNoDelay": true
         }
       }
     }
@@ -176,7 +180,13 @@ cat > "$CONFIG_PATH" << JSON
   "outbounds": [
     {
       "protocol": "freedom",
-      "tag": "direct"
+      "tag": "direct",
+      "streamSettings": {
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpNoDelay": true
+        }
+      }
     }
   ]
 }
