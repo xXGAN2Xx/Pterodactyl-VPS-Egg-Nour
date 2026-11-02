@@ -8,11 +8,14 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates
+    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates unzip
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
     echo "--- System Setup: Dependencies already installed. Skipping. ---"
+    if ! command -v unzip >/dev/null 2>&1; then
+        apt-get update -y && apt-get install -y unzip
+    fi
 fi
 
 generate_nrnet() {
@@ -20,23 +23,97 @@ generate_nrnet() {
     cat << 'EOF' > "$TARGET"
 #!/bin/bash
 
-echo "---[ sing-box VLESS + REALITY + Vision Startup Script (PRoot) ]---"
+echo "---[ Xray VLESS + REALITY + Vision Startup Script (PRoot) ]---"
 
 # Read argument directly (works with or without --)
 RAW_ARG="$1"
-SNI="${RAW_ARG#--}"
-SNI="${SNI#-}"
-SNI="${SNI:-playstation.net}"
+CLEAN_ARG="${RAW_ARG#--}"
+CLEAN_ARG="${CLEAN_ARG#-}"
+
+# Map shortcuts and default to playstation.net
+case "${CLEAN_ARG,,}" in
+    ""|"playstation"|"ps"|"playstation.net")
+        SNI="playstation.net"
+        ;;
+    "snap"|"snapchat"|"www.snapchat.com"|"snapchat.com")
+        SNI="www.snapchat.com"
+        ;;
+    "ekb"|"ekb.eg")
+        SNI="ekb.eg"
+        ;;
+    "netflix"|"netflix.com"|"www.netflix.com")
+        SNI="netflix.com"
+        ;;
+    *)
+        SNI="$CLEAN_ARG"
+        ;;
+esac
 
 echo "✅ Active SNI: $SNI"
 
-CONFIG_DIR="/etc/sing-box"
+CONFIG_DIR="/etc/xray"
 CONFIG_PATH="${CONFIG_DIR}/config.json"
+XRAY_BIN="/usr/local/bin/xray"
 
 mkdir -p "$CONFIG_DIR"
 
-echo "Installing/Updating sing-box..."
-curl -fsSL https://sing-box.app/install.sh | sh
+# --- Auto-Update & Installation Check ---
+install_or_update_xray() {
+    echo "🔍 Checking for Xray-core updates..."
+
+    # Get Local Version
+    if [ -x "$XRAY_BIN" ]; then
+        LOCAL_VER="v$("$XRAY_BIN" version 2>/dev/null | head -n 1 | awk '{print $2}')"
+    else
+        LOCAL_VER="Not Installed"
+    fi
+
+    # Get Latest Version via GitHub Redirect (Avoids GitHub API rate-limits)
+    LATEST_URL=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/XTLS/Xray-core/releases/latest 2>/dev/null)
+    LATEST_VER="${LATEST_URL##*/}"
+
+    if [ -z "$LATEST_VER" ] || [[ "$LATEST_VER" != v* ]]; then
+        echo "⚠️ Could not fetch latest version from GitHub."
+        if [ "$LOCAL_VER" != "Not Installed" ]; then
+            echo "➡️ Proceeding with installed version ($LOCAL_VER)."
+            return 0
+        fi
+        LATEST_Download_Path="latest/download"
+    else
+        echo "📌 Installed: $LOCAL_VER | Latest: $LATEST_VER"
+        if [ "$LOCAL_VER" = "$LATEST_VER" ]; then
+            echo "✅ Xray is already on the latest version ($LOCAL_VER)."
+            return 0
+        fi
+        echo "⬆️ New version available! Updating Xray to $LATEST_VER..."
+        LATEST_Download_Path="download/${LATEST_VER}"
+    fi
+
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        x86_64|amd64) XRAY_ARCH="64" ;;
+        aarch64|arm64) XRAY_ARCH="arm64-v8a" ;;
+        armv7*|armv8l) XRAY_ARCH="arm32-v7a" ;;
+        *) echo "❌ Unsupported architecture: $ARCH"; exit 1 ;;
+    esac
+
+    TMP_DIR=$(mktemp -d)
+    if curl -fsSL "https://github.com/XTLS/Xray-core/releases/${LATEST_Download_Path}/Xray-linux-${XRAY_ARCH}.zip" -o "${TMP_DIR}/xray.zip"; then
+        unzip -q "${TMP_DIR}/xray.zip" -d "$TMP_DIR"
+        install -m 755 "${TMP_DIR}/xray" "$XRAY_BIN"
+        install -m 644 "${TMP_DIR}/geoip.dat" "/usr/local/bin/geoip.dat" 2>/dev/null || true
+        install -m 644 "${TMP_DIR}/geosite.dat" "/usr/local/bin/geosite.dat" 2>/dev/null || true
+        rm -rf "$TMP_DIR"
+        NEW_VER="v$("$XRAY_BIN" version 2>/dev/null | head -n 1 | awk '{print $2}')"
+        echo "✅ Xray successfully updated/installed ($NEW_VER)."
+    else
+        rm -rf "$TMP_DIR"
+        echo "❌ Failed to download Xray."
+        [ -x "$XRAY_BIN" ] || exit 1
+    fi
+}
+
+install_or_update_xray
 
 if [ -z "${SERVER_PORT:-}" ]; then
     read -rp "SERVER_PORT (Recommended 443) [443]: " SERVER_PORT
@@ -58,31 +135,38 @@ PUBLIC_KEY="QUe0db2J_a4YZLnTpIqCG3MxjdmVcxkDYiJFs3dyRxo"
 cat > "$CONFIG_PATH" << JSON
 {
   "log": {
-    "disabled": true
+    "loglevel": "none"
   },
   "inbounds": [
     {
-      "type": "vless",
-      "tag": "vless-in",
       "listen": "0.0.0.0",
-      "listen_port": ${SERVER_PORT},
-      "users": [
-        {
-          "uuid": "${CLIENT_UUID}",
-          "flow": "xtls-rprx-vision"
-        }
-      ],
-      "tls": {
-        "enabled": true,
-        "server_name": "${SNI}",
-        "reality": {
-          "enabled": true,
-          "handshake": {
-            "server": "google.com",
-            "server_port": 443
-          },
-          "private_key": "${PRIVATE_KEY}",
-          "short_id": [
+      "port": ${SERVER_PORT},
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "${CLIENT_UUID}",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "google.com:443",
+          "xver": 0,
+          "serverNames": [
+            "playstation.net",
+            "www.snapchat.com",
+            "ekb.eg",
+            "netflix.com",
+            "${SNI}"
+          ],
+          "privateKey": "${PRIVATE_KEY}",
+          "shortIds": [
             ""
           ]
         }
@@ -91,7 +175,7 @@ cat > "$CONFIG_PATH" << JSON
   ],
   "outbounds": [
     {
-      "type": "direct",
+      "protocol": "freedom",
       "tag": "direct"
     }
   ]
@@ -99,29 +183,30 @@ cat > "$CONFIG_PATH" << JSON
 JSON
 
 echo "Validating configuration..."
-if ! sing-box check -c "$CONFIG_PATH"; then
+if ! "$XRAY_BIN" run -test -c "$CONFIG_PATH" > /dev/null 2>&1; then
     echo "❌ Config validation failed, aborting."
+    "$XRAY_BIN" run -test -c "$CONFIG_PATH"
     exit 1
 fi
 
 echo "=========================================================="
-echo " ✅ VLESS + REALITY + Vision Link:"
+echo " ✅ Xray VLESS + REALITY + Vision Link (${SNI}):"
 echo ""
 echo "vless://${CLIENT_UUID}@${SERVER_IP}:${SERVER_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}&type=tcp&headerType=none#Nour-${SERVER_PORT}"
 echo ""
 echo "=========================================================="
 
-echo "Stopping any existing sing-box process..."
-pkill -f "sing-box run" 2>/dev/null || true
+echo "Stopping any existing Xray process..."
+pkill -f "$XRAY_BIN run" 2>/dev/null || true
 
-echo "Starting sing-box with nohup..."
-nohup sing-box run -c "$CONFIG_PATH" > /dev/null 2>&1 &
+echo "Starting Xray with nohup..."
+nohup "$XRAY_BIN" run -c "$CONFIG_PATH" > /dev/null 2>&1 &
 sleep 1
 
-if pgrep -f "sing-box run" > /dev/null; then
-    echo "sing-box is up and running in background."
+if pgrep -f "$XRAY_BIN run" > /dev/null; then
+    echo "✅ Xray is up and running in background."
 else
-    echo "⚠️ Process failed to stay alive. Test manually with: sing-box run -c $CONFIG_PATH"
+    echo "⚠️ Process failed to stay alive. Test manually with: $XRAY_BIN run -c $CONFIG_PATH"
 fi
 EOF
 }
@@ -133,17 +218,11 @@ chmod +x "$NRNET_SCRIPT"
 echo " ╔══════════════════════════════════════════╗"
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
-echo "Script By Nour Elden"
+echo "Script By Nour Elden (Xray Auto-Update Edition)"
 echo "Usage Examples:"
 echo "  1) Default (playstation.net):"
 echo "bash $NRNET_SCRIPT"
 echo ""
-echo "  2) EKB:"
-echo "bash $NRNET_SCRIPT ekb.eg"
-echo ""
-echo "  3) Snapchat:"
-echo "bash $NRNET_SCRIPT www.snapchat.com"
-echo ""
-echo "  4) Netflix:"
-echo "bash $NRNET_SCRIPT netflix.com"
+echo "  2) Snapchat (www.snapchat.com):"
+echo "bash $NRNET_SCRIPT snap"
 echo " ╚══════════════════════════════════════════╝"
