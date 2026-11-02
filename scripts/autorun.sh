@@ -8,7 +8,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates unzip
+    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates procps unzip
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
@@ -25,30 +25,7 @@ generate_nrnet() {
 
 echo "---[ Xray VLESS + REALITY + Vision Startup Script (PRoot) ]---"
 
-# Read argument directly (works with or without --)
-RAW_ARG="$1"
-CLEAN_ARG="${RAW_ARG#--}"
-CLEAN_ARG="${CLEAN_ARG#-}"
-
-# Map shortcuts and default to playstation.net
-case "${CLEAN_ARG,,}" in
-    ""|"playstation"|"ps"|"playstation.net")
-        SNI="playstation.net"
-        ;;
-    "snap"|"snapchat"|"www.snapchat.com"|"snapchat.com")
-        SNI="www.snapchat.com"
-        ;;
-    "ekb"|"ekb.eg")
-        SNI="ekb.eg"
-        ;;
-    "netflix"|"netflix.com"|"www.netflix.com")
-        SNI="netflix.com"
-        ;;
-    *)
-        SNI="$CLEAN_ARG"
-        ;;
-esac
-
+SNI="playstation.net"
 echo "✅ Active SNI: $SNI"
 
 CONFIG_DIR="/etc/xray"
@@ -162,8 +139,7 @@ cat > "$CONFIG_PATH" << JSON
             "playstation.net",
             "www.snapchat.com",
             "ekb.eg",
-            "netflix.com",
-            "${SNI}"
+            "netflix.com"
           ],
           "privateKey": "${PRIVATE_KEY}",
           "shortIds": [
@@ -171,7 +147,6 @@ cat > "$CONFIG_PATH" << JSON
           ]
         },
         "sockopt": {
-          "tcpFastOpen": true,
           "tcpNoDelay": true
         }
       }
@@ -183,7 +158,6 @@ cat > "$CONFIG_PATH" << JSON
       "tag": "direct",
       "streamSettings": {
         "sockopt": {
-          "tcpFastOpen": true,
           "tcpNoDelay": true
         }
       }
@@ -229,10 +203,6 @@ echo " ╔═══════════════════════�
 echo " ║            ✅ SETUP COMPLETE             ║"
 echo " ╠══════════════════════════════════════════╣"
 echo "Script By Nour Elden (Xray Auto-Update Edition)"
-echo "Usage Examples:"
-echo "  1) Default (playstation.net):"
+echo "Usage:"
 echo "bash $NRNET_SCRIPT"
-echo ""
-echo "  2) Snapchat (www.snapchat.com):"
-echo "bash $NRNET_SCRIPT snap"
 echo " ╚══════════════════════════════════════════╝"
