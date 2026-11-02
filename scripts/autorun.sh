@@ -8,7 +8,7 @@ DEP_LOCK_FILE="/etc/os_deps_installed"
 if [ ! -f "$DEP_LOCK_FILE" ]; then
     echo "--- First Time Setup: Updating & Installing Dependencies ---"
     apt-get update -y
-    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates procps unzip
+    apt-get install -y curl wget sudo nano tmate python3-minimal tar ca-certificates procps openssl unzip
     touch "$DEP_LOCK_FILE"
     echo "Dependencies installed."
 else
