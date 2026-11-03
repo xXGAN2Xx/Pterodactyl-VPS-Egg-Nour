@@ -40,7 +40,7 @@ install_or_update_xray() {
 
     # Run official Xray install script without geoip.dat and geosite.dat
     # '|| true' prevents exit in PRoot environments where systemd is not running
-    bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata || true
+    bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata --version v26.3.27 || true
 
     # Remove any leftover geodata files just in case
     rm -f /usr/local/share/xray/geoip.dat /usr/local/share/xray/geosite.dat \
