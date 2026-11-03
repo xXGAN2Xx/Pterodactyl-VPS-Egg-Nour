@@ -34,59 +34,24 @@ XRAY_BIN="/usr/local/bin/xray"
 
 mkdir -p "$CONFIG_DIR"
 
-# --- Auto-Update & Installation Check ---
+# --- Official Installation & Auto-Update (Without Geodata) ---
 install_or_update_xray() {
-    echo "🔍 Checking for Xray-core updates..."
+    echo "🔍 Installing/Updating Xray-core using official script (without geodata)..."
 
-    # Get Local Version
+    # Run official Xray install script without geoip.dat and geosite.dat
+    # '|| true' prevents exit in PRoot environments where systemd is not running
+    bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --without-geodata || true
+
+    # Remove any leftover geodata files just in case
+    rm -f /usr/local/share/xray/geoip.dat /usr/local/share/xray/geosite.dat \
+          /usr/local/bin/geoip.dat /usr/local/bin/geosite.dat 2>/dev/null || true
+
     if [ -x "$XRAY_BIN" ]; then
-        LOCAL_VER="v$("$XRAY_BIN" version 2>/dev/null | head -n 1 | awk '{print $2}')"
-    else
-        LOCAL_VER="Not Installed"
-    fi
-
-    # Get Latest Version via GitHub Redirect (Avoids GitHub API rate-limits)
-    LATEST_URL=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/XTLS/Xray-core/releases/latest 2>/dev/null)
-    LATEST_VER="${LATEST_URL##*/}"
-
-    if [ -z "$LATEST_VER" ] || [[ "$LATEST_VER" != v* ]]; then
-        echo "⚠️ Could not fetch latest version from GitHub."
-        if [ "$LOCAL_VER" != "Not Installed" ]; then
-            echo "➡️ Proceeding with installed version ($LOCAL_VER)."
-            return 0
-        fi
-        LATEST_Download_Path="latest/download"
-    else
-        echo "📌 Installed: $LOCAL_VER | Latest: $LATEST_VER"
-        if [ "$LOCAL_VER" = "$LATEST_VER" ]; then
-            echo "✅ Xray is already on the latest version ($LOCAL_VER)."
-            return 0
-        fi
-        echo "⬆️ New version available! Updating Xray to $LATEST_VER..."
-        LATEST_Download_Path="download/${LATEST_VER}"
-    fi
-
-    ARCH=$(uname -m)
-    case "$ARCH" in
-        x86_64|amd64) XRAY_ARCH="64" ;;
-        aarch64|arm64) XRAY_ARCH="arm64-v8a" ;;
-        armv7*|armv8l) XRAY_ARCH="arm32-v7a" ;;
-        *) echo "❌ Unsupported architecture: $ARCH"; exit 1 ;;
-    esac
-
-    TMP_DIR=$(mktemp -d)
-    if curl -fsSL "https://github.com/XTLS/Xray-core/releases/${LATEST_Download_Path}/Xray-linux-${XRAY_ARCH}.zip" -o "${TMP_DIR}/xray.zip"; then
-        unzip -q "${TMP_DIR}/xray.zip" -d "$TMP_DIR"
-        install -m 755 "${TMP_DIR}/xray" "$XRAY_BIN"
-        install -m 644 "${TMP_DIR}/geoip.dat" "/usr/local/bin/geoip.dat" 2>/dev/null || true
-        install -m 644 "${TMP_DIR}/geosite.dat" "/usr/local/bin/geosite.dat" 2>/dev/null || true
-        rm -rf "$TMP_DIR"
         NEW_VER="v$("$XRAY_BIN" version 2>/dev/null | head -n 1 | awk '{print $2}')"
-        echo "✅ Xray successfully updated/installed ($NEW_VER)."
+        echo "✅ Xray successfully installed/updated ($NEW_VER)."
     else
-        rm -rf "$TMP_DIR"
-        echo "❌ Failed to download Xray."
-        [ -x "$XRAY_BIN" ] || exit 1
+        echo "❌ Failed to install Xray."
+        exit 1
     fi
 }
 
@@ -153,7 +118,6 @@ cat > "$CONFIG_PATH" << JSON
   "outbounds": [
     {
       "protocol": "freedom",
-      "tag": "direct",
       "streamSettings": {
         "sockopt": {
           "tcpNoDelay": true
