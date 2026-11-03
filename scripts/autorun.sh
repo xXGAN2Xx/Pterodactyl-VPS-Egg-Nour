@@ -103,7 +103,7 @@ while ! echo "$SERVER_PORT" | grep -qE '^[0-9]+$' \
 done
 echo "✅ Using Port: $SERVER_PORT"
 
-SERVER_IP=$(curl -s4 ifconfig.me || curl -s4 api.ipify.org)
+SERVER_IP=$(curl -fsSL4 --max-time 5 api.ipify.org || curl -fsSL4 --max-time 5 ifconfig.me || curl -fsSL4 --max-time 5 icanhazip.com)
 
 CLIENT_UUID="00000000-0000-0000-0000-000000000000"
 PRIVATE_KEY="mIR3on3XwYQUqljzpQUbH1E3IDU0xVkUBplnGNljY2A"
@@ -129,22 +129,20 @@ cat > "$CONFIG_PATH" << JSON
         "decryption": "none"
       },
       "streamSettings": {
-        "network": "tcp",
+        "network": "raw",
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "dl.google.com:443",
+          "target": "dl.google.com:443",
           "xver": 0,
           "serverNames": [
             "playstation.net",
             "www.snapchat.com",
-            "ekb.eg",
-            "netflix.com"
+            "netflix.com",
+            "ekb.eg"
           ],
           "privateKey": "${PRIVATE_KEY}",
-          "shortIds": [
-            ""
-          ]
+          "shortIds": [""]
         },
         "sockopt": {
           "tcpNoDelay": true
@@ -182,6 +180,7 @@ echo "=========================================================="
 
 echo "Stopping any existing Xray process..."
 pkill -f "$XRAY_BIN run" 2>/dev/null || true
+sleep 1
 
 echo "Starting Xray with nohup..."
 nohup "$XRAY_BIN" run -c "$CONFIG_PATH" > /dev/null 2>&1 &
@@ -190,7 +189,9 @@ sleep 1
 if pgrep -f "$XRAY_BIN run" > /dev/null; then
     echo "✅ Xray is up and running in background."
 else
-    echo "⚠️ Process failed to stay alive. Test manually with: $XRAY_BIN run -c $CONFIG_PATH"
+    echo "⚠️ Process failed to stay alive. Log output:"
+    cat "$XRAY_LOG" 2>/dev/null || true
+    echo "Test manually with: $XRAY_BIN run -c $CONFIG_PATH"
 fi
 EOF
 }
